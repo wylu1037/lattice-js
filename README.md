@@ -7,6 +7,10 @@
 ## Intro
 Lattice SDK implemented in TypeScript.
 
+## Test
+
+[Mocha](https://github.com/mochajs/mocha) and [Chai](https://github.com/chaijs/chai)
+
 ## Plan
 
 
