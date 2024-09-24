@@ -21,6 +21,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@ethersproject/wordlists": "^5.7.0"
+    "@ethersproject/wordlists": "^5.7.0",
+    "@ethersproject/sha2": "^5.7.0"
   }
 }
