@@ -1,8 +1,70 @@
+# Node modules
+node_modules/
+
+# Dist directory
+dist/
+build/
+
+# Logs
 *.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# TypeScript cache
+*.tsbuildinfo
+
+# IDEA directory
+.idea/
+
+# MacOS
 .DS_Store
-node_modules
-dist
-coverage
-.nyc_output
-.github
-.yarn
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# VS Code
+.vscode/
+
+# Optional npm cache directory
+.npm/
+
+# TypeScript output
+*.js
+*.jsx
+*.d.ts.map
+
+# Optional ESLint cache
+.eslintcache
+
+# Jest
+/jest-cache/
+/jest-coverage/
+
+# Coverage directory
+coverage/
+
+# Optional eslint cache
+.eslintcache
+
+# Snyk
+.snyk
+
+# Optional stylelint cache
+.stylelintcache
+
+# Yarn
+.yarn-integrity
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
