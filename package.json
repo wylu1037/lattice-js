@@ -2,9 +2,12 @@
   "name": "lattice-js",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "index.js",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
-    "test": "mocha",
+    "test": "ts-mocha 'tests/**/*.test.ts'",
     "build": "tsc",
     "start": "ts-node src/index.ts",
     "lint": "tslint -p tsconfig.json"
@@ -13,7 +16,7 @@
     "blockchain",
     "lattice"
   ],
-  "author": "",
+  "author": "wylu",
   "license": "MIT",
   "devDependencies": {
     "@babel/preset-typescript": "^7.24.7",
