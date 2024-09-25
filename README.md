@@ -11,7 +11,12 @@ Lattice SDK implemented in TypeScript.
 ## Test
 How to use [Mocha](https://github.com/mochajs/mocha) and [Chai](https://github.com/chaijs/chai), [Click me](https://www.testim.io/blog/mocha-for-typescript-testing/) to explore.
 
-
+> 清除 `Node.js` 模块缓存并重新安装依赖
+```shell
+rm -rf node_modules
+npm cache clean --force
+npm install
+```
 
 ## Plan
 

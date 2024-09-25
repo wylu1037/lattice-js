@@ -1,11 +1,11 @@
-import { sha256 } from '@ethersproject/sha2';
+import { sha256 } from "@ethersproject/sha2";
 
-export interface CheckDecodeResult {
+interface CheckDecodeResult {
   result: Buffer;
   version: number;
 }
 
-export interface Base58Interface {
+interface Base58Interface {
   // first four bytes of sha256^2
   checksum(input: Buffer): Buffer;
 
@@ -16,7 +16,7 @@ export interface Base58Interface {
   checkDecode(input: string): CheckDecodeResult;
 }
 
-export class Base58Impl implements Base58Interface {
+class Base58Impl implements Base58Interface {
   checkDecode(input: string): CheckDecodeResult {
     return { result: Buffer.from(input), version: 1 };
   }
@@ -35,11 +35,4 @@ export class Base58Impl implements Base58Interface {
   }
 }
 
-function testChecksum() {
-  const base58 = new Base58Impl();
-  const out = base58.checksum(Buffer.from("Hello World", "utf-8"));
-  const hexString = out.toString("hex");
-  console.log(hexString);
-}
-
-testChecksum();
+export { Base58Impl, Base58Interface, CheckDecodeResult };
