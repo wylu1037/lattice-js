@@ -20,3 +20,9 @@ let person: Person = {
 };
 
 person.greet();
+
+interface Animal {
+  name: string;
+  age: number;
+  call(): string;
+}

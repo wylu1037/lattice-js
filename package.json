@@ -32,6 +32,7 @@
     "typescript": "^5.6.2"
   },
   "dependencies": {
+    "@ethersproject/basex": "^5.7.0",
     "@ethersproject/sha2": "^5.7.0",
     "@ethersproject/wordlists": "^5.7.0"
   }

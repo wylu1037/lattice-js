@@ -1,4 +1,5 @@
 import { sha256 } from "@ethersproject/sha2";
+import { Base58 } from "@ethersproject/basex";
 
 interface CheckDecodeResult {
   result: Buffer;
@@ -22,9 +23,13 @@ class Base58Impl implements Base58Interface {
   }
 
   checkEncode(input: Buffer, version: number): string {
-    console.log(input);
-    console.log(version);
-    return "";
+    const b = new Uint8Array(1+input.length+4);
+    b[0] = version;
+    b.set(input, 1);
+
+    const sum = this.checksum(Buffer.from(b.subarray(0, 1+input.length)));
+    b.set(sum, 1+input.length);
+    return Base58.encode(b);
   }
 
   checksum(input: Buffer): Buffer {
