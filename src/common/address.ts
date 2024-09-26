@@ -23,6 +23,27 @@ class Address {
         }
         return this.address;
     }
+
+    // convert zltc address to eth address
+    // Returns: eth address
+    toETH(): string {
+        if (!this.address) {
+            return ADDRESS_TITLE;
+        }
+        const splitArr = this.address.split("_");
+        if (splitArr.length !== 2) {
+            throw new Error(`invalid address ${this.address}`);
+        }
+        if (splitArr[0] !== ADDRESS_TITLE) {
+            throw new Error(`invalid address ${this.address}`);
+        }
+        const base58: Base58Interface = new Base58Impl();
+        const {result: dec, version} = base58.checkDecode(splitArr[1])
+        if (version !== ADDRESS_VERSION) {
+            throw new Error(`invalid address ${this.address}`);
+        }
+        return `${HEX_PREFIX}${dec.toString('hex')}`
+    }
 }
 
-export { Address };
+export {Address};
