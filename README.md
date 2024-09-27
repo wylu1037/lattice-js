@@ -6,12 +6,21 @@
 </div>
 
 ## Intro
+
 Lattice SDK implemented in TypeScript.
 
-## Test
-How to use [Mocha](https://github.com/mochajs/mocha) and [Chai](https://github.com/chaijs/chai), [Click me](https://www.testim.io/blog/mocha-for-typescript-testing/) to explore.
+## Tech stack
 
-> 清除 `Node.js` 模块缓存并重新安装依赖
++ [Axios](https://github.com/axios/axios) Promise based HTTP client for the browser and node.js
+
+## Test
+
+How to use [Mocha](https://github.com/mochajs/mocha)
+and [Chai](https://github.com/chaijs/chai), [Click me](https://www.testim.io/blog/mocha-for-typescript-testing/) to
+explore.
+
+> Clear the `Node.js` module cache and reinstall the dependencies.
+
 ```shell
 rm -rf node_modules
 npm cache clean --force
@@ -20,6 +29,8 @@ npm install
 
 ## Plan
 
+🗓️
 
 ## Website
+
 Build with [VitePress](https://vitepress.dev/) or [Astro](https://astro.build/) 
