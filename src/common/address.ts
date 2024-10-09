@@ -1,8 +1,9 @@
 import {ADDRESS_TITLE, ADDRESS_VERSION, HEX_PREFIX} from "./constants";
 import {Base58Impl, Base58Interface} from "./base58";
 
+// This is a address class. Can be converted to eth address or zltc address
 class Address {
-
+    // eth address or zltc address
     address: string;
 
     constructor(address: string) {
