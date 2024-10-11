@@ -14,15 +14,21 @@ describe("Base58", () => {
             expect(actual).to.equal(expected);
         });
 
-        it('should convert eth to zltc', () => {
+        it("should convert eth to zltc", () => {
             const base58: Base58Interface = new Base58Impl();
-            const array = [146, 147, 198, 4, 198, 68, 191, 172, 52, 244, 152, 153, 140, 195, 64, 47, 32, 61, 77, 107];
-            const actual = `${ADDRESS_TITLE}_${base58.checkEncode(Buffer.from(array), ADDRESS_VERSION)}`;
+            const array = [
+                146, 147, 198, 4, 198, 68, 191, 172, 52, 244, 152, 153, 140, 195, 64,
+                47, 32, 61, 77, 107,
+            ];
+            const actual = `${ADDRESS_TITLE}_${base58.checkEncode(
+                Buffer.from(array),
+                ADDRESS_VERSION
+            )}`;
             const expected = "zltc_dhdfbm9JEoyDvYoCDVsABiZj52TAo9Ei6";
             expect(actual).to.equal(expected);
         });
 
-        it('should convert zltc to eth', () => {
+        it("should convert zltc to eth", () => {
             const zltc = "zltc_dhdfbm9JEoyDvYoCDVsABiZj52TAo9Ei6";
             const address = new Address(zltc);
             const actual = address.toETH();

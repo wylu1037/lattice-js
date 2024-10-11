@@ -1,14 +1,9 @@
 import {CryptoInterface, KeyPair} from "./crypto";
-import {Curve} from "../common/enums";
 import {secp256k1} from "ethereum-cryptography/secp256k1";
 import {getRandomBytes} from "ethereum-cryptography/random";
 
 class NIST implements CryptoInterface {
-    async generateKeyPair(curve: Curve): Promise<KeyPair> {
-        if (curve !== Curve.SECP256K1) {
-            throw new Error("This implementation only supports Secp256k1 curve");
-        }
-
+    async generateKeyPair(): Promise<KeyPair> {
         // Generate a random private key
         let privateKey: Uint8Array;
         do {
