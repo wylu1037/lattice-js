@@ -1,14 +1,15 @@
-import {Curve} from "../common/enums";
-
 export interface KeyPair {
     // 32 bytes
     privateKey: Buffer;
-    // 65 bytes
+    // 65 bytes, uncompressed public key
     publicKey: Buffer;
 }
 
 export interface CryptoInterface {
     // generate key pair
     // return private key and public key
-    generateKeyPair(curve: Curve): Promise<KeyPair>;
+    generateKeyPair(): KeyPair;
+
+    // compress public key
+    compressPublicKey(publicKey: Buffer | string): Buffer;
 }
