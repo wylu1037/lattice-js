@@ -31,7 +31,7 @@ Thumbs.db
 ehthumbs.db
 
 # VS Code
-.vscode/
+#.vscode/
 
 # Optional npm cache directory
 .npm/

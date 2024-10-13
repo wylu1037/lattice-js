@@ -1,0 +1,5 @@
+{
+    "mochaExplorer.files": "tests/**/*.test.ts",
+    "mochaExplorer.require": "ts-node/register",
+    "mochaExplorer.nodeArgv": ["--loader=ts-node/esm"]
+}
