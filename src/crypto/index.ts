@@ -1,7 +1,7 @@
 let isDone: boolean = false;
 let numbers: number[] = [1, 2, 3, 4, 5];
 
-let tuple: [string, number] = ["", 1];
+let tuple: [string, number] = ['', 1];
 
 interface Person {
   name: string;
@@ -11,11 +11,11 @@ interface Person {
 }
 
 let person: Person = {
-  name: "John",
+  name: 'John',
   age: 5,
-  address: "American",
+  address: 'American',
   greet() {
-    console.log("Hello World!");
+    console.log('Hello World!');
   },
 };
 
