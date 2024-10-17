@@ -2,7 +2,7 @@ import { BigInteger } from 'jsbn';
 import { convertBigIntegerToHexString } from '../../common/converter';
 
 // ASN1 Object, ASN1 is Abstract Syntax Notation One
-abstract class ASN1Object {
+class ASN1Object {
   // tlv represent "Tag-Length-Value"
   tlv: string | null;
   // tag is a 2-digit hexadecimal number, represent the type of the ASN1 object
@@ -37,7 +37,10 @@ abstract class ASN1Object {
     return head.toString(16) + nHex;
   }
 
-  abstract getValue(): string;
+  getValue(): string {
+    // default implementation
+    return this.value;
+  }
 
   // get the DER encoded hex string of the ASN1 object
   getEncodedHexString(): string {
