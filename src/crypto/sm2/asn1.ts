@@ -2,7 +2,7 @@ import { BigInteger } from 'jsbn';
 import { convertBigIntegerToHexString } from '../../common/converter';
 
 // ASN1 Object, ASN1 is Abstract Syntax Notation One
-class ASN1Object {
+abstract class ASN1Object {
   // tlv represent "Tag-Length-Value"
   tlv: string | null;
   // tag is a 2-digit hexadecimal number, represent the type of the ASN1 object
@@ -37,9 +37,7 @@ class ASN1Object {
     return head.toString(16) + nHex;
   }
 
-  getValue(): string {
-    return '';
-  }
+  abstract getValue(): string;
 
   // get the DER encoded hex string of the ASN1 object
   getEncodedHexString(): string {
@@ -53,6 +51,7 @@ class ASN1Object {
   }
 }
 
+// DERInteger is a ASN1 object that represent an integer
 class DERInteger extends ASN1Object {
   constructor(value: BigInteger) {
     super();
@@ -60,6 +59,27 @@ class DERInteger extends ASN1Object {
     if (value) {
       this.value = convertBigIntegerToHexString(value);
     }
+  }
+
+  getValue(): string {
+    return this.value;
+  }
+}
+
+// DERSequence is a ASN1 object that represent a sequence.
+// A sequence is a collection of ASN1 objects.
+class DERSequence extends ASN1Object {
+  asn1Array: Array<ASN1Object>;
+
+  constructor(asn1Array: Array<ASN1Object>) {
+    super();
+    this.tag = '30'; // tag for sequence
+    this.asn1Array = asn1Array;
+  }
+
+  getValue(): string {
+    this.value = this.asn1Array.map((asn1) => asn1.getEncodedHexString()).join('');
+    return this.value;
   }
 }
 
