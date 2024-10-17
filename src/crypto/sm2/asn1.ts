@@ -1,5 +1,6 @@
 import { BigInteger } from 'jsbn';
-import { convertBigIntegerToHexString } from '@/common/converter';
+import { convertBigIntegerToHexString } from '../../common/converter';
+
 // ASN1 Object, ASN1 is Abstract Syntax Notation One
 class ASN1Object {
   // tlv represent "Tag-Length-Value"
