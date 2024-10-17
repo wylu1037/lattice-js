@@ -1,3 +1,4 @@
+// ASN1 Object, ASN1 is Abstract Syntax Notation One
 class ASN1Object {
   // tlv represent "Tag-Length-Value"
   tlv: string | null;
