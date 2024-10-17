@@ -1,13 +1,18 @@
 import axios, { AxiosRequestHeaders, AxiosResponse } from 'axios';
 
+// json-rpc id
 const JSON_RPC_ID: number = 1;
+// json-rpc version
 const JSON_RPC_VERSION: string = '2.0';
 
+// json-rpc error struct
 interface JsonRpcError {
   code?: number;
   message?: string;
 }
 
+// json-rpc response struct.
+// and the generic type T is the type of the result
 interface JsonRpcResponse<T> {
   id: number;
   jsonrpc: string;
@@ -15,6 +20,7 @@ interface JsonRpcResponse<T> {
   error?: JsonRpcError;
 }
 
+// json-rpc request struct
 interface JsonRpcBody {
   id: number;
   jsonrpc: string;
@@ -22,6 +28,7 @@ interface JsonRpcBody {
   params?: any[];
 }
 
+// http provider
 class HttpProvider {
   // base url that used to access node
   baseUrl: string;
@@ -45,6 +52,7 @@ class HttpProvider {
     }
   }
 
+  // send a post request to node and return axios response
   private async rawPost(jsonRpcBody: JsonRpcBody, headers?: AxiosRequestHeaders): Promise<AxiosResponse> {
     try {
       return await axios.post(this.baseUrl, jsonRpcBody, { headers: headers || {} });
@@ -58,15 +66,20 @@ class HttpProvider {
   }
 }
 
+// http client interface
 interface HttpClient {
+  // http provider
   httpProvider: HttpProvider;
 
+  // get latest block info from chain
   getLatestBlock(accountAddress: string): Promise<LatestBlock>;
 }
 
+// http client implementation
 class HttpClientImpl implements HttpClient {
   httpProvider: HttpProvider;
 
+  // construct a http client with http provider
   constructor(private provider: HttpProvider) {
     this.httpProvider = provider;
   }
@@ -97,10 +110,13 @@ class HttpClientImpl implements HttpClient {
   }
 }
 
+// latest block info
 interface LatestBlock {
   // latest transaction height associated with account
   currentTBlockNumber: number;
+  // latest transaction block hash associated with account
   currentTBlockHash: string;
+  // latest daemon block hash associated with account
   currentDBlockHash: string;
 }
 
