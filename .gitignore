@@ -70,3 +70,6 @@ coverage/
 *.tgz
 
 ./idea
+
+.package-lock.json
+.yarn.lock

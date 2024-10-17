@@ -1,3 +1,5 @@
+import { BigInteger } from 'jsbn';
+import { convertBigIntegerToHexString } from '@/common/converter';
 // ASN1 Object, ASN1 is Abstract Syntax Notation One
 class ASN1Object {
   // tlv represent "Tag-Length-Value"
@@ -38,7 +40,7 @@ class ASN1Object {
     return '';
   }
 
-  // get the der encoded hex string of the ASN1 object
+  // get the DER encoded hex string of the ASN1 object
   getEncodedHexString(): string {
     if (!this.tlv) {
       this.value = this.getValue();
@@ -47,6 +49,16 @@ class ASN1Object {
     }
 
     return this.tlv;
+  }
+}
+
+class DERInteger extends ASN1Object {
+  constructor(value: BigInteger) {
+    super();
+    this.tag = '02'; // tag for integer
+    if (value) {
+      this.value = convertBigIntegerToHexString(value);
+    }
   }
 }
 
