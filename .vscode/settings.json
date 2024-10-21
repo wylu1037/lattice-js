@@ -1,5 +1,23 @@
 {
-    "mochaExplorer.files": "tests/**/*.test.ts",
-    "mochaExplorer.require": "ts-node/register",
-    "mochaExplorer.nodeArgv": ["--loader=ts-node/esm"]
+  "mochaExplorer.files": "tests/**/*.test.ts",
+  "mochaExplorer.require": "ts-node/register",
+  "mochaExplorer.nodeArgv": ["--loader=ts-node/esm"],
+
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "javascript.experimental.updateImportsOnPaste": true,
+  "javascript.preferences.organizeImports": {
+    "enabled": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
