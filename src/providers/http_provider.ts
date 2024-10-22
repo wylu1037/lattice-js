@@ -1,9 +1,9 @@
-import axios, { AxiosRequestHeaders, AxiosResponse } from 'axios';
+import axios, { AxiosRequestHeaders, AxiosResponse } from "axios";
 
 // json-rpc id
 const JSON_RPC_ID: number = 1;
 // json-rpc version
-const JSON_RPC_VERSION: string = '2.0';
+const JSON_RPC_VERSION: string = "2.0";
 
 // json-rpc error struct
 interface JsonRpcError {
@@ -39,7 +39,10 @@ class HttpProvider {
   }
 
   // send a post request to node and return json-rpc response
-  async post<T>(jsonRpcBody: JsonRpcBody, headers?: AxiosRequestHeaders): Promise<JsonRpcResponse<T>> {
+  async post<T>(
+    jsonRpcBody: JsonRpcBody,
+    headers?: AxiosRequestHeaders
+  ): Promise<JsonRpcResponse<T>> {
     try {
       const response = await this.rawPost(jsonRpcBody, headers);
       return response.data as JsonRpcResponse<T>;
@@ -47,20 +50,25 @@ class HttpProvider {
       if (error instanceof Error) {
         throw error;
       } else {
-        throw new Error('Unknown error');
+        throw new Error("Unknown error");
       }
     }
   }
 
   // send a post request to node and return axios response
-  private async rawPost(jsonRpcBody: JsonRpcBody, headers?: AxiosRequestHeaders): Promise<AxiosResponse> {
+  private async rawPost(
+    jsonRpcBody: JsonRpcBody,
+    headers?: AxiosRequestHeaders
+  ): Promise<AxiosResponse> {
     try {
-      return await axios.post(this.baseUrl, jsonRpcBody, { headers: headers || {} });
+      return await axios.post(this.baseUrl, jsonRpcBody, {
+        headers: headers || {},
+      });
     } catch (error) {
       if (error instanceof Error) {
         throw error;
       } else {
-        throw new Error('Unknown error');
+        throw new Error("Unknown error");
       }
     }
   }
@@ -88,7 +96,7 @@ class HttpClientImpl implements HttpClient {
   // when the response internal error is not null, throw error
   private handleJsonRpcResponse<T>(response: JsonRpcResponse<T>): T {
     if (!response) {
-      throw new Error('response is null');
+      throw new Error("response is null");
     }
     if (response.error) {
       throw new Error(`${response.error.code}: ${response.error.message}`);
@@ -100,12 +108,14 @@ class HttpClientImpl implements HttpClient {
   // Params accountAddress: string, example: zltc_cXV46yWanovM6ZppX91ZbUEtN6vAU7GiF
   // Returns LatestBlock
   async getLatestBlock(accountAddress: string): Promise<LatestBlock> {
-    const response: JsonRpcResponse<LatestBlock> = await this.httpProvider.post({
-      id: JSON_RPC_ID,
-      jsonrpc: JSON_RPC_VERSION,
-      method: 'latc_getCurrentTBDB',
-      params: [accountAddress],
-    });
+    const response: JsonRpcResponse<LatestBlock> = await this.httpProvider.post(
+      {
+        id: JSON_RPC_ID,
+        jsonrpc: JSON_RPC_VERSION,
+        method: "latc_getCurrentTBDB",
+        params: [accountAddress],
+      }
+    );
     return this.handleJsonRpcResponse<LatestBlock>(response);
   }
 }
@@ -120,4 +130,12 @@ interface LatestBlock {
   currentDBlockHash: string;
 }
 
-export { JsonRpcBody, JsonRpcResponse, JsonRpcError, HttpProvider, LatestBlock, HttpClient, HttpClientImpl };
+export {
+  JsonRpcBody,
+  JsonRpcResponse,
+  JsonRpcError,
+  HttpProvider,
+  LatestBlock,
+  HttpClient,
+  HttpClientImpl,
+};
