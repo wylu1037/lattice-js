@@ -1,3 +1,4 @@
+import { LatestBlock, Transaction } from "../common/types";
 import axios, { AxiosRequestHeaders, AxiosResponse } from "axios";
 
 // json-rpc id
@@ -81,6 +82,12 @@ interface HttpClient {
 
   // get latest block info from chain
   getLatestBlock(accountAddress: string): Promise<LatestBlock>;
+
+  // send a transaction to chain
+  sendTransaction(transaction: Transaction): Promise<string>;
+
+  // batch send transactions to chain
+  batchSendTransactions(transactions: Transaction[]): Promise<string[]>;
 }
 
 // http client implementation
@@ -118,16 +125,28 @@ class HttpClientImpl implements HttpClient {
     );
     return this.handleJsonRpcResponse<LatestBlock>(response);
   }
-}
 
-// latest block info
-interface LatestBlock {
-  // latest transaction height associated with account
-  currentTBlockNumber: number;
-  // latest transaction block hash associated with account
-  currentTBlockHash: string;
-  // latest daemon block hash associated with account
-  currentDBlockHash: string;
+  // send a transaction to chain
+  async sendTransaction(transaction: Transaction): Promise<string> {
+    const response: JsonRpcResponse<string> = await this.httpProvider.post({
+      id: JSON_RPC_ID,
+      jsonrpc: JSON_RPC_VERSION,
+      method: "wallet_sendRawTBlock",
+      params: [transaction],
+    });
+    return this.handleJsonRpcResponse<string>(response);
+  }
+
+  // batch send transactions to chain
+  async batchSendTransactions(transactions: Transaction[]): Promise<string[]> {
+    const response: JsonRpcResponse<string[]> = await this.httpProvider.post({
+      id: JSON_RPC_ID,
+      jsonrpc: JSON_RPC_VERSION,
+      method: "wallet_sendRawBatchTBlock",
+      params: [transactions],
+    });
+    return this.handleJsonRpcResponse<string[]>(response);
+  }
 }
 
 export {
@@ -135,7 +154,6 @@ export {
   JsonRpcResponse,
   JsonRpcError,
   HttpProvider,
-  LatestBlock,
   HttpClient,
   HttpClientImpl,
 };
