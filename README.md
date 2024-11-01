@@ -9,6 +9,8 @@
 
 Lattice SDK implemented in TypeScript.
 
+[Sm2](https://github.com/Cubelrti/sm-crypto-v2/)
+
 ## Tech stack
 
 + [Axios](https://github.com/axios/axios) Promise based HTTP client for the browser and node.js
