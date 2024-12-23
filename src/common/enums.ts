@@ -1,6 +1,6 @@
 export enum Curve {
   // NIST
-  SECP256K1,
+  Secp256k1,
   // GM
-  SM2P256V1,
+  Sm2p256v1,
 }

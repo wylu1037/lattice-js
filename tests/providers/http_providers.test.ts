@@ -8,7 +8,7 @@ import { expect } from "chai";
 describe("HttpProviders", () => {
   describe("Http Client", () => {
     it("should be able to send http request", async () => {
-      const provider = new HttpProvider("http://192.168.1.185:13000");
+      const provider = new HttpProvider("http://192.168.3.51:13000");
       const client: HttpClient = new HttpClientImpl(provider);
       try {
         const response = await client.getLatestBlock(

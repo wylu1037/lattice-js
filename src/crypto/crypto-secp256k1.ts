@@ -1,9 +1,9 @@
-import { CryptoInterface, KeyPair } from "./crypto";
+import { CryptoService, KeyPair } from "./crypto";
 import { secp256k1 } from "ethereum-cryptography/secp256k1";
 import { randomBytes } from "@noble/hashes/utils";
 import { BigInteger } from "jsbn";
 
-export class NIST implements CryptoInterface {
+export class NIST implements CryptoService {
   generateKeyPair(): KeyPair {
     // Generate a random private key
     let privateKey: Uint8Array;

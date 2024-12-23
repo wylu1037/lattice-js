@@ -5,7 +5,7 @@ export interface KeyPair {
   publicKey: Buffer;
 }
 
-export interface CryptoInterface {
+export interface CryptoService {
   // generate key pair
   // return private key and public key
   generateKeyPair(): KeyPair;

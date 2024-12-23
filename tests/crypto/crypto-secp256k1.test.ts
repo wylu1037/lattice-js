@@ -1,11 +1,11 @@
 import { NIST } from "../../src/crypto/crypto-secp256k1";
 import { expect } from "chai";
-import { CryptoInterface } from "../../src/crypto/crypto";
+import { CryptoService } from "../../src/crypto/crypto";
 
 describe("Secp256k1", () => {
   describe("generateKeyPair", () => {
     it("should generate keypair", () => {
-      let crypto: CryptoInterface = new NIST();
+      let crypto: CryptoService = new NIST();
       let { privateKey, publicKey } = crypto.generateKeyPair();
       let compressedPublicKey = crypto.compressPublicKey(publicKey);
       const expectedPrivateKeySize = 32;
