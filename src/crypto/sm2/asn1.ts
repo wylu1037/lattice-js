@@ -1,182 +1,224 @@
-import { BigInteger } from "jsbn";
-import { convertBigIntegerToHexString } from "../../common/converter";
+/* eslint-disable class-methods-use-this */
 
-// ASN1 Object, ASN1 is Abstract Syntax Notation One
+import * as utils from "@noble/curves/abstract/utils";
+import { ONE } from "./bn";
+
+export function bigintToValue(bigint: bigint) {
+  let h = bigint.toString(16);
+  if (h[0] !== "-") {
+    // 正数
+    if (h.length % 2 === 1) h = "0" + h; // 补齐到整字节
+    else if (!h.match(/^[0-7]/)) h = "00" + h; // 非0开头，则补一个全0字节
+  } else {
+    // 负数
+    h = h.substring(1);
+    let len = h.length;
+    if (len % 2 === 1) len += 1; // 补齐到整字节
+    else if (!h.match(/^[0-7]/)) len += 2; // 非0开头，则补一个全0字节
+
+    let maskString = "";
+    for (let i = 0; i < len; i++) maskString += "f";
+    let mask = utils.hexToNumber(maskString);
+
+    // 对绝对值取反，加1
+
+    let output = (mask ^ bigint) + ONE;
+    h = output.toString(16).replace(/^-/, "");
+  }
+  return h;
+}
+
 class ASN1Object {
-  // tlv represent "Tag-Length-Value"
-  tlv: string | null;
-  // tag is a 2-digit hexadecimal number, represent the type of the ASN1 object
-  tag: string;
-  // length is a 2-digit hexadecimal number, represent the length of the value
-  length: string;
-  // value is a hexadecimal string, represent the value of the ASN1 object
-  value: string;
+  constructor(
+    public tlv: string | null = null,
+    public t = "00",
+    public l = "00",
+    public v = ""
+  ) {}
 
-  constructor() {
-    this.tlv = null;
-    this.tag = "00";
-    this.length = "00";
-    this.value = "";
-  }
-
-  // get the length of the value in hex string
-  getLength(): string {
-    const n = this.value.length / 2; // byte length of the value
-    let nHex = n.toString(16);
-    if (nHex.length % 2 === 0) nHex = `0${nHex}`; // padding to even length
-
-    if (n < 128) {
-      // short form, start with 0
-      return nHex;
-    }
-
-    // long form, start with 1
-    // 128 equals to 10000000 in binary, which is 1(1bit) + 7(7bit)
-    // 1 represent the long form, 7 represent the length of the length
-    const head = 128 + nHex.length / 2;
-    return head.toString(16) + nHex;
-  }
-
-  getValue(): string {
-    // default implementation
-    return this.value;
-  }
-
-  // get the DER encoded hex string of the ASN1 object
-  getEncodedHexString(): string {
+  /**
+   * 获取 der 编码比特流16进制串
+   */
+  getEncodedHex() {
     if (!this.tlv) {
-      this.value = this.getValue();
-      this.length = this.getLength();
-      this.tlv = this.tag + this.length + this.value;
+      this.v = this.getValue();
+      this.l = this.getLength();
+      this.tlv = this.t + this.l + this.v;
     }
-
     return this.tlv;
   }
-}
 
-// DERInteger is a ASN1 object that represent an integer
-class DERInteger extends ASN1Object {
-  constructor(value: BigInteger) {
-    super();
-    this.tag = "02"; // tag for integer
-    if (value) {
-      this.value = convertBigIntegerToHexString(value);
+  getLength() {
+    const n = this.v.length / 2; // 字节数
+    let nHex = n.toString(16);
+    if (nHex.length % 2 === 1) nHex = "0" + nHex; // 补齐到整字节
+
+    if (n < 128) {
+      // 短格式，以 0 开头
+      return nHex;
+    } else {
+      // 长格式，以 1 开头
+      const head = 128 + nHex.length / 2; // 1(1位) + 真正的长度占用字节数(7位) + 真正的长度
+      return head.toString(16) + nHex;
     }
   }
 
-  getValue(): string {
-    return this.value;
+  getValue() {
+    return "";
   }
 }
 
-// DERSequence is a ASN1 object that represent a sequence.
-// A sequence is a collection of ASN1 objects.
-class DERSequence extends ASN1Object {
-  asn1Array: Array<ASN1Object>;
-
-  constructor(asn1Array: Array<ASN1Object>) {
+class DERInteger extends ASN1Object {
+  constructor(bigint: bigint) {
     super();
-    this.tag = "30"; // tag for sequence
-    this.asn1Array = asn1Array;
+
+    this.t = "02"; // 整型标签说明
+    if (bigint) this.v = bigintToValue(bigint);
   }
 
-  getValue(): string {
-    this.value = this.asn1Array
-      .map((asn1) => asn1.getEncodedHexString())
+  getValue() {
+    return this.v;
+  }
+}
+
+class DEROctetString extends ASN1Object {
+  public hV: string = "";
+  constructor(public s: string) {
+    super();
+
+    this.t = "04"; // octstr 标签说明
+    if (s) this.v = s.toLowerCase();
+  }
+
+  getValue() {
+    return this.v;
+  }
+}
+
+class DERSequence extends ASN1Object {
+  public t = "30";
+  constructor(public asn1Array: ASN1Object[]) {
+    super();
+  }
+
+  getValue() {
+    this.v = this.asn1Array
+      .map((asn1Object) => asn1Object.getEncodedHex())
       .join("");
-    return this.value;
+    return this.v;
   }
 }
 
-// get the occupied bytes of the length field
-function getLenOfLengthField(value: string, start: number): number {
-  // the + symbol is used to convert the string to number
-  // the first 2 bits of the encoded value represent the tag field,
-  // the next 2 bits represent the length field
-  if (+value[start + 2] < 8) {
-    // if value field is in short form, only 1 byte is used to represent the length
-    return 1;
-  }
+/**
+ * 获取 l 占用字节数
+ */
+function getLenOfL(str: string, start: number) {
+  if (+str[start + 2] < 8) return 1; // l 以0开头，则表示短格式，只占一个字节
+  // 长格式，取第一个字节后7位作为长度真正占用字节数，再加上本身
+  const encoded = str.slice(start + 2, start + 6);
+  const headHex = encoded.slice(0, 2);
+  const head = parseInt(headHex, 16);
+  const nHexLength = (head - 128) * 2;
 
-  // if value field is in long form
-  const lengthFiled = +value.substring(start + 2, start + 4);
-
-  // 0x7f equals to 01111111 in binary, equals 127 in decimal,
-  // 0x7f + 1 equals to 10000000 in binary, equals 128 in decimal.
-  // Example: 0101 & 0011 = 0001
-  return lengthFiled & (0x7f + 1);
+  return nHexLength;
 }
 
-// get the length field
-function getLengthField(value: string, start: number): number {
-  const len = getLenOfLengthField(value, start);
-  const lengthField = value.substring(start + 2, start + 2 + len * 2);
+/**
+ * 获取 l
+ */
+function getL(str: string, start: number) {
+  // 获取 l
+  const len = getLenOfL(str, start);
+  const l = str.substring(start + 2, start + 2 + len * 2);
 
-  if (!lengthField) {
-    return -1;
-  }
-  const bigInt =
-    +lengthField[0] < 8
-      ? new BigInteger(lengthField, 16)
-      : new BigInteger(lengthField.substring(2, lengthField.length), 16);
+  if (!l) return -1;
+  const bigint =
+    +l[0] < 8 ? utils.hexToNumber(l) : utils.hexToNumber(l.substring(2));
 
-  return bigInt.intValue();
+  return +bigint.toString();
 }
 
-// get the start of the value field
-function getStartOfValueField(value: string, start: number): number {
-  const len = getLenOfLengthField(value, start);
-  // +1 because the tag field itself is also counted
-  // *2 because each byte is represented by 2 hexadecimal digits
+/**
+ * 获取 v 的位置
+ */
+function getStartOfV(str: string, start: number) {
+  const len = getLenOfL(str, start);
   return start + (len + 1) * 2;
 }
 
-// encode the signature to DER format,
-// r and s are the components of the signature,
-// r represents the x coordinate of the point R,
-// s represents the signature value, contains the message hash, private key and r.
-export function encodeDER(r: BigInteger, s: BigInteger): string {
+/**
+ * ASN.1 der 编码，针对 sm2 签名
+ */
+export function encodeDer(r: bigint, s: bigint) {
   const derR = new DERInteger(r);
   const derS = new DERInteger(s);
-  const derSequence = new DERSequence([derR, derS]);
+  const derSeq = new DERSequence([derR, derS]);
 
-  return derSequence.getEncodedHexString();
+  return derSeq.getEncodedHex();
 }
 
-export interface DecodedSignature {
-  r: BigInteger;
-  s: BigInteger;
+export function encodeEnc(x: bigint, y: bigint, hash: string, cipher: string) {
+  const derX = new DERInteger(x);
+  const derY = new DERInteger(y);
+  const derHash = new DEROctetString(hash);
+  const derCipher = new DEROctetString(cipher);
+  const derSeq = new DERSequence([derX, derY, derHash, derCipher]);
+  return derSeq.getEncodedHex();
 }
+/**
+ * 解析 ASN.1 der，针对 sm2 验签
+ */
+export function decodeDer(input: string) {
+  // 结构：
+  // input = | tSeq | lSeq | vSeq |
+  // vSeq = | tR | lR | vR | tS | lS | vS |
+  const start = getStartOfV(input, 0);
 
-// decode the signature from DER format
-export function decodeDER(value: string): DecodedSignature {
-  if (value.length < 8 || value.substring(0, 2) !== "30") {
-    throw new Error("Invalid DER encoded signature");
-  }
-
-  // value = | tSequence | lSequence | vSequence |
-  // vSequence = | tR | lR | vR | tS | lS | vS |
-  const start = getStartOfValueField(value, 0);
-  if (start >= value.length) {
-    throw new Error("Invalid DER length");
-  }
-
-  const vIndexR = getStartOfValueField(value, start);
-  const lR = getLengthField(value, start);
-  if (vIndexR + lR * 2 > value.length) {
-    throw new Error("Invalid R value length");
-  }
-  const vR = value.substring(vIndexR, vIndexR + lR * 2);
+  const vIndexR = getStartOfV(input, start);
+  const lR = getL(input, start);
+  const vR = input.substring(vIndexR, vIndexR + lR * 2);
 
   const nextStart = vIndexR + vR.length;
-  const vIndexS = getStartOfValueField(value, nextStart);
-  const lS = getLengthField(value, nextStart);
-  if (vIndexS + lS * 2 > value.length) {
-    throw new Error("Invalid S value length");
-  }
-  const vS = value.substring(vIndexS, vIndexS + lS * 2);
+  const vIndexS = getStartOfV(input, nextStart);
+  const lS = getL(input, nextStart);
+  const vS = input.substring(vIndexS, vIndexS + lS * 2);
 
-  return { r: new BigInteger(vR, 16), s: new BigInteger(vS, 16) };
+  // const r = new BigInteger(vR, 16)
+  // const s = new BigInteger(vS, 16)
+  const r = utils.hexToNumber(vR);
+  const s = utils.hexToNumber(vS);
+
+  return { r, s };
 }
 
-export { ASN1Object };
+/**
+ * 解析 ASN.1 der，针对 sm2 加密
+ */
+export function decodeEnc(input: string) {
+  // Extracts a sequence from the input based on the current start index.
+  function extractSequence(
+    input: string,
+    start: number
+  ): { value: string; nextStart: number } {
+    const vIndex = getStartOfV(input, start);
+    const length = getL(input, start);
+    const value = input.substring(vIndex, vIndex + length * 2);
+    const nextStart = vIndex + value.length;
+    return { value, nextStart };
+  }
+
+  const start = getStartOfV(input, 0);
+
+  const { value: vR, nextStart: startS } = extractSequence(input, start);
+  const { value: vS, nextStart: startHash } = extractSequence(input, startS);
+  const { value: hash, nextStart: startCipher } = extractSequence(
+    input,
+    startHash
+  );
+  const { value: cipher } = extractSequence(input, startCipher);
+
+  const x = utils.hexToNumber(vR);
+  const y = utils.hexToNumber(vS);
+
+  return { x, y, hash, cipher };
+}
