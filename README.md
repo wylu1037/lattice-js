@@ -14,6 +14,7 @@ Lattice SDK implemented in TypeScript.
 ## Tech stack
 
 + [Axios](https://github.com/axios/axios) Promise based HTTP client for the browser and node.js
++ [Pino](https://github.com/pinojs/pino) 🌲 super fast, all natural json logger
 
 ## Test
 
@@ -28,8 +29,6 @@ rm -rf node_modules
 npm cache clean --force
 npm install
 ```
-
-https://nodejs.org/en/learn/test-runner/using-test-runner
 
 ## Plan
 

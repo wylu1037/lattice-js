@@ -1,4 +1,4 @@
-import { sm3 } from "../../../src/crypto/sm3";
+import { sm3 } from "@/crypto/sm3";
 import { expect } from "chai";
 import { describe, it } from "mocha";
 

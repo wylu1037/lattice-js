@@ -94,7 +94,7 @@ interface HttpClient {
 class HttpClientImpl implements HttpClient {
   httpProvider: HttpProvider;
 
-  // construct a http client with http provider
+  // construct an http client with http provider
   constructor(private provider: HttpProvider) {
     this.httpProvider = provider;
   }
@@ -126,7 +126,12 @@ class HttpClientImpl implements HttpClient {
     return this.handleJsonRpcResponse<LatestBlock>(response);
   }
 
-  // send a transaction to chain
+  /**
+   * Send signed transaction to blockchain.
+   *
+   * @param transaction signed transaction
+   * @return transaction hash
+   */
   async sendTransaction(transaction: Transaction): Promise<string> {
     const response: JsonRpcResponse<string> = await this.httpProvider.post({
       id: JSON_RPC_ID,

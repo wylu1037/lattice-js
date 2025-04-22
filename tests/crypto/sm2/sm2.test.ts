@@ -1,4 +1,4 @@
-import { sm2 } from "../../../src/crypto/index";
+import { sm2 } from "@/crypto/index";
 
 describe("crypto.sm2", () => {
   describe("generate keypair", () => {

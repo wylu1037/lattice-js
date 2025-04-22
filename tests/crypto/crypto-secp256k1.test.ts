@@ -1,6 +1,6 @@
-import { NIST } from "../../src/crypto/crypto-secp256k1";
+import { NIST } from "@/crypto/crypto-secp256k1";
+import { CryptoService } from "@/crypto/crypto";
 import { expect } from "chai";
-import { CryptoService } from "../../src/crypto/crypto";
 
 describe("Secp256k1", () => {
   describe("generateKeyPair", () => {

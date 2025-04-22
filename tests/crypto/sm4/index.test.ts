@@ -1,4 +1,4 @@
-import { sm4 } from "../../../src/crypto/index";
+import { sm4 } from "@/crypto/index";
 import { expect } from "chai";
 import { describe, it } from "mocha";
 

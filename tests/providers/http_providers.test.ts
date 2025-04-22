@@ -2,7 +2,7 @@ import {
   HttpClient,
   HttpClientImpl,
   HttpProvider,
-} from "../../src/providers/http_provider";
+} from "@/providers/http_provider";
 import { expect } from "chai";
 
 describe("HttpProviders", () => {
