@@ -12,7 +12,8 @@ describe("HttpProviders", () => {
       const client: HttpClient = new HttpClientImpl(provider);
       try {
         const response = await client.getLatestBlock(
-          "zltc_cXV46yWanovM6ZppX91ZbUEtN6vAU7GiF"
+            1,
+          "zltc_Yvvg3Zw2y7Szb3dzaYJsGHwqB4wofLgJ1"
         );
         console.log(response);
         expect(response).not.to.be.null;

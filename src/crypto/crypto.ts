@@ -1,9 +1,18 @@
 import { KeyPair } from "./types";
 
 export interface CryptoService {
-  // generate key pair, return private key and public key
+  /**
+   * Generate a key pair
+   * 
+   * @returns The key pair
+   */
   generateKeyPair(): KeyPair;
 
-  // compress public key
+  /**
+   * Compress the public key
+   * 
+   * @param publicKey - The public key
+   * @returns The compressed public key
+   */
   compressPublicKey(publicKey: Buffer | string): Buffer;
 }

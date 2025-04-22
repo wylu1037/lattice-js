@@ -1,4 +1,5 @@
 import { sm2 } from "@/crypto/index";
+import { log } from "@/logger";
 
 describe("crypto.sm2", () => {
   describe("generate keypair", () => {
@@ -7,9 +8,9 @@ describe("crypto.sm2", () => {
       let unCompressedPublicKey = keypair.publicKey;
       let privateKey = keypair.privateKey;
       let compressedPublicKey = sm2.compressPublicKeyHex(unCompressedPublicKey);
-      console.log("unCompressedPublicKey: ", unCompressedPublicKey);
-      console.log("compressedPublicKey: ", compressedPublicKey);
-      console.log("privateKey: ", privateKey);
+      log.info("unCompressedPublicKey: ", unCompressedPublicKey);
+      log.info("compressedPublicKey: ", compressedPublicKey);
+      log.info("privateKey: ", privateKey);
     });
   });
 
@@ -20,14 +21,14 @@ describe("crypto.sm2", () => {
       let privateKey = keypair.privateKey;
       let unCompressedPublicKey = keypair.publicKey;
       const signature = sm2.doSignature(msgString, privateKey);
-      console.log("signature: ", signature);
+      log.info("signature: ", signature);
 
       let verifyResult = sm2.doVerifySignature(
         msgString,
         signature,
         unCompressedPublicKey
       );
-      console.log("verifyResult: ", verifyResult);
+      log.info("verifyResult: ", verifyResult);
     });
   });
 });

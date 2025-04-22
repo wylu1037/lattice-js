@@ -23,6 +23,7 @@
     "@types/chai": "^4.3.20",
     "@types/mocha": "^10.0.8",
     "@types/node": "^20.16.7",
+    "@types/pino": "^7.0.5",
     "chai": "^5.1.1",
     "mocha": "^10.7.3",
     "ts-mocha": "^10.0.0",
@@ -34,7 +35,9 @@
     "@ethersproject/basex": "^5.7.0",
     "@ethersproject/sha2": "^5.7.0",
     "@ethersproject/wordlists": "^5.7.0",
+    "@jvddavid/pino-rotating-file": "^1.0.7",
     "axios": "^1.8.4",
-    "ethereum-cryptography": "^3.0.0"
+    "ethereum-cryptography": "^3.0.0",
+    "pino": "^9.6.0"
   }
 }

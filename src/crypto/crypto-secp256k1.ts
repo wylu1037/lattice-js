@@ -2,7 +2,7 @@ import { CryptoService } from "./crypto";
 import { KeyPair } from "./types";
 import { secp256k1 } from "ethereum-cryptography/secp256k1";
 import { randomBytes } from "@noble/hashes/utils";
-
+import { log } from "@/logger";
 export class NIST implements CryptoService {
   generateKeyPair(): KeyPair {
     // Generate a random private key
@@ -32,6 +32,7 @@ export class NIST implements CryptoService {
       publicKeyBuffer = publicKey;
     }
     if (publicKeyBuffer.length != 65) {
+      log.error("Invalid public key length, expected size is 65, but actual size is %d", publicKeyBuffer.length);
       throw new Error(
         `Invalid public key length, expected size is 65, but actual size is ${publicKeyBuffer.length}`
       );
