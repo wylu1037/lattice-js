@@ -1,4 +1,4 @@
-import { Hash, CHash, Input, toBytes } from "../sm3/utils";
+import { Hash, CHash, Input, toBytes } from '@/crypto/sm3/utils';
 
 // HMAC (RFC 2104)
 export class HMAC<T extends Hash<T>> extends Hash<HMAC<T>> {
@@ -13,8 +13,8 @@ export class HMAC<T extends Hash<T>> extends Hash<HMAC<T>> {
     super();
     const key = toBytes(_key);
     this.iHash = hash.create() as T;
-    if (typeof this.iHash.update !== "function")
-      throw new Error("Expected instance of class which extends utils.Hash");
+    if (typeof this.iHash.update !== 'function')
+      throw new Error('Expected instance of class which extends utils.Hash');
     this.blockLen = this.iHash.blockLen;
     this.outputLen = this.iHash.outputLen;
     const blockLen = this.blockLen;
@@ -34,6 +34,7 @@ export class HMAC<T extends Hash<T>> extends Hash<HMAC<T>> {
     this.iHash.update(buf);
     return this;
   }
+
   digestInto(out: Uint8Array) {
     this.finished = true;
     this.iHash.digestInto(out);
@@ -41,11 +42,13 @@ export class HMAC<T extends Hash<T>> extends Hash<HMAC<T>> {
     this.oHash.digestInto(out);
     this.destroy();
   }
+
   digest() {
     const out = new Uint8Array(this.oHash.outputLen);
     this.digestInto(out);
     return out;
   }
+
   _cloneInto(to?: HMAC<T>): HMAC<T> {
     // Create new instance without calling constructor since key already in state and we don't know it.
     to ||= Object.create(Object.getPrototypeOf(this), {});
@@ -59,6 +62,7 @@ export class HMAC<T extends Hash<T>> extends Hash<HMAC<T>> {
     to.iHash = iHash._cloneInto(to.iHash);
     return to;
   }
+
   destroy() {
     this.destroyed = true;
     this.oHash.destroy();
@@ -68,10 +72,12 @@ export class HMAC<T extends Hash<T>> extends Hash<HMAC<T>> {
 
 /**
  * HMAC: RFC2104 message authentication code.
+ * 
  * @param hash - function that would be used e.g. sha256
  * @param key - message key
  * @param message - message data
  */
 export const hmac = (hash: CHash, key: Input, message: Input): Uint8Array =>
   new HMAC<any>(hash, key).update(message).digest();
+
 hmac.create = (hash: CHash, key: Input) => new HMAC<any>(hash, key);

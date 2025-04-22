@@ -4,7 +4,7 @@ import {
   Input,
   toBytes,
   wrapConstructor,
-} from "../sm3/utils.js";
+} from "@/crypto/sm3/utils";
 
 const BoolA = (A: number, B: number, C: number) => (A & B) | (A & C) | (B & C);
 const BoolB = (A: number, B: number, C: number) => A ^ B ^ C;
@@ -60,9 +60,6 @@ function P1(X: number) {
   return X ^ rotl(X, 15) ^ rotl(X, 23);
 }
 
-// from noble-hashes (https://github.com/paulmillr/noble-hashes#hmac)
-/*! noble-hashes - MIT License (c) 2022 Paul Miller (paulmillr.com) */
-
 // Base SHA2 class (RFC 6234)
 export abstract class SHA2<T extends SHA2<T>> extends Hash<T> {
   protected abstract process(buf: DataView, offset: number): void;
@@ -94,7 +91,6 @@ export abstract class SHA2<T extends SHA2<T>> extends Hash<T> {
     const len = data.length;
     for (let pos = 0; pos < len; ) {
       const take = Math.min(blockLen - this.pos, len - pos);
-      // Fast path: we have at least one block in input, cast it to view and process
       if (take === blockLen) {
         const dataView = createView(data);
         for (; blockLen <= len - pos; pos += blockLen)
@@ -115,34 +111,23 @@ export abstract class SHA2<T extends SHA2<T>> extends Hash<T> {
   }
   digestInto(out: Uint8Array) {
     this.finished = true;
-    // Padding
-    // We can avoid allocation of buffer for padding completely if it
-    // was previously not allocated here. But it won't change performance.
     const { buffer, view, blockLen, isLE } = this;
     let { pos } = this;
-    // append the bit '1' to the message
     buffer[pos++] = 0b10000000;
     this.buffer.subarray(pos).fill(0);
-    // we have less than padOffset left in buffer, so we cannot put length in current block, need process it and pad again
     if (this.padOffset > blockLen - pos) {
       this.process(view, 0);
       pos = 0;
     }
-    // Pad until full block byte with zeros
     for (let i = pos; i < blockLen; i++) buffer[i] = 0;
-    // Note: sha512 requires length to be 128bit integer, but length in JS will overflow before that
-    // You need to write around 2 exabytes (u64_max / 8 / (1024**6)) for this to happen.
-    // So we just write lowest 64 bits of that value.
     setBigUint64(view, blockLen - 8, BigInt(this.length * 8), isLE);
     this.process(view, 0);
     const oview = createView(out);
     const len = this.outputLen;
-    // NOTE: we do division by 4 later, which should be fused in single op with modulo by JIT
     if (len % 4) throw new Error("_sha2: outputLen should be aligned to 32bit");
     const outLen = len / 4;
     const state = this.get();
-    if (outLen > state.length)
-      throw new Error("_sha2: outputLen bigger than state");
+    if (outLen > state.length) throw new Error("_sha2: outputLen bigger than state");
     for (let i = 0; i < outLen; i++) oview.setUint32(4 * i, state[i], isLE);
   }
   digest() {
@@ -176,8 +161,6 @@ const T1 = 0x79cc4519;
 const T2 = 0x7a879d8a;
 
 class SM3 extends SHA2<SM3> {
-  // We cannot use array here since array allows indexing by variable
-  // which means optimizer/compiler cannot use registers.
   A = IV[0] | 0;
   B = IV[1] | 0;
   C = IV[2] | 0;
@@ -203,7 +186,6 @@ class SM3 extends SHA2<SM3> {
     const { A, B, C, D, E, F, G, H } = this;
     return [A, B, C, D, E, F, G, H];
   }
-  // prettier-ignore
   protected set(
     A: number, B: number, C: number, D: number, E: number, F: number, G: number, H: number
   ) {
@@ -217,7 +199,6 @@ class SM3 extends SHA2<SM3> {
     this.H = H | 0;
   }
   protected process(view: DataView, offset: number): void {
-    // Extend the first 16 words into the remaining 48 words w[16..63] of the message schedule array
     for (let i = 0; i < 16; i++, offset += 4)
       SM3_W[i] = view.getUint32(offset, false);
     for (let i = 16; i < 68; i++) {
@@ -229,19 +210,14 @@ class SM3 extends SHA2<SM3> {
     for (let i = 0; i < 64; i++) {
       SM3_M[i] = SM3_W[i] ^ SM3_W[i + 4];
     }
-    // Compression function main loop, 64 rounds
     let { A, B, C, D, E, F, G, H } = this;
     for (let j = 0; j < 64; j++) {
       let small = j >= 0 && j <= 15;
       let T = small ? T1 : T2;
       let SS1 = rotl(rotl(A, 12) + E + rotl(T, j), 7);
       let SS2 = SS1 ^ rotl(A, 12);
-
-      let TT1 =
-        ((small ? BoolB(A, B, C) : BoolA(A, B, C)) + D + SS2 + SM3_M[j]) | 0;
-      let TT2 =
-        ((small ? BoolB(E, F, G) : BoolC(E, F, G)) + H + SS1 + SM3_W[j]) | 0;
-
+      let TT1 = ((small ? BoolB(A, B, C) : BoolA(A, B, C)) + D + SS2 + SM3_M[j]) | 0;
+      let TT2 = ((small ? BoolB(E, F, G) : BoolC(E, F, G)) + H + SS1 + SM3_W[j]) | 0;
       D = C;
       C = rotl(B, 9);
       B = A;
@@ -251,7 +227,6 @@ class SM3 extends SHA2<SM3> {
       F = E;
       E = P0(TT2);
     }
-    // Add the compressed chunk to the current hash value
     A = (A ^ this.A) | 0;
     B = (B ^ this.B) | 0;
     C = (C ^ this.C) | 0;
@@ -270,4 +245,5 @@ class SM3 extends SHA2<SM3> {
     this.buffer.fill(0);
   }
 }
+
 export const sm3 = wrapConstructor(() => new SM3());

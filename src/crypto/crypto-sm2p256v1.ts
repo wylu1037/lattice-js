@@ -1,4 +1,5 @@
-import { CryptoService, KeyPair } from "./crypto";
+import { CryptoService } from "./crypto";
+import { KeyPair } from "./types";
 
 export class GM implements CryptoService {
   generateKeyPair(): KeyPair {

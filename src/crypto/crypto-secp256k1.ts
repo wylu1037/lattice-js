@@ -2,7 +2,6 @@ import { CryptoService } from "./crypto";
 import { KeyPair } from "./types";
 import { secp256k1 } from "ethereum-cryptography/secp256k1";
 import { randomBytes } from "@noble/hashes/utils";
-import { BigInteger } from "jsbn";
 
 export class NIST implements CryptoService {
   generateKeyPair(): KeyPair {
@@ -40,15 +39,12 @@ export class NIST implements CryptoService {
 
     // calculate x coordinate and y coordinate
     const x = publicKeyBuffer.subarray(1, 33);
-    const y = new BigInteger(
-      publicKeyBuffer.subarray(33, 65).toString("hex"),
-      16
-    );
+    const y = BigInt(`0x${publicKeyBuffer.subarray(33, 65).toString("hex")}`);
 
     // judge whether the y coordinate is even
     // `02` represents even, `03` represents odd.
     let prefix = "02";
-    if (y.mod(new BigInteger("2")).equals(BigInteger.ONE)) {
+    if (y % BigInt(2) === BigInt(1)) {
       prefix = "03";
     }
 

@@ -1,10 +1,8 @@
-import { BigInteger } from 'jsbn';
-
 const NEGATIVE_SYMBOL = '-';
 
 // the highest bit of hex string is 1, it means the number is negative
 // the highest bit of hex string is 0, it means the number is positive
-function convertBigIntegerToHexString(value: BigInteger): string {
+function convertBigIntToHexString(value: bigint): string {
   let hex = value.toString(16);
   const symbol = hex[0];
   if (symbol !== NEGATIVE_SYMBOL) {
@@ -31,14 +29,16 @@ function convertBigIntegerToHexString(value: BigInteger): string {
       mask += 'f';
     }
 
-    // 1. convert mask to BigInteger
+    // 1. convert mask to BigInt
     // 2. xor with value
     // 3. add 1
     // 4. convert to hex string
     // 5. remove the negative symbol
-    hex = new BigInteger(mask, 16).xor(value).add(BigInteger.ONE).toString(16).replace(/^-/, '');
+    const maskBigInt = BigInt(`0x${mask}`);
+    const result = (maskBigInt ^ value) + BigInt(1);
+    hex = result.toString(16).replace(/^-/, '');
   }
   return hex;
 }
 
-export { convertBigIntegerToHexString };
+export { convertBigIntToHexString };

@@ -12,26 +12,28 @@ declare module wx {
   }): void;
 }
 
-const DEFAULT_PRNG_POOL_SIZE = 16384;
-let prngPool = new Uint8Array(0);
-let _syncCrypto: typeof import("crypto")["webcrypto"];
+type WebCrypto = typeof import('crypto')['webcrypto']
+
+const DEFAULT_PRNG_POOL_SIZE = 16384
+let prngPool = new Uint8Array(0)
+let _syncCrypto: WebCrypto
+
 export async function initRNGPool() {
-  if ("crypto" in globalThis) {
-    // @ts-ignore
-    _syncCrypto = globalThis.crypto;
-    return; // no need to use pooling
+  if ('crypto' in globalThis) {
+    _syncCrypto = globalThis.crypto as unknown as WebCrypto
+    return // no need to use pooling
   }
-  if (prngPool.length > DEFAULT_PRNG_POOL_SIZE / 2) return; // there is sufficient number
+  if (prngPool.length > DEFAULT_PRNG_POOL_SIZE / 2) return // there is sufficient number
   // we always populate full pool size
   // since numbers may be consumed during micro tasks.
   // @ts-ignore
-  if ("wx" in globalThis && "getRandomValues" in globalThis.wx) {
-    prngPool = await new Promise((r) => {
+  if ('wx' in globalThis && 'getRandomValues' in globalThis.wx) {
+    prngPool = await new Promise(r => {
       wx.getRandomValues({
         length: DEFAULT_PRNG_POOL_SIZE,
         success(res) {
           r(new Uint8Array(res.randomValues));
-        },
+        }
       });
     });
   } else {
@@ -39,34 +41,31 @@ export async function initRNGPool() {
     try {
       // node 19+ and browser
       if (globalThis.crypto) {
-        // @ts-ignore
-        _syncCrypto = globalThis.crypto;
+        _syncCrypto = globalThis.crypto as unknown as WebCrypto
       } else {
         // node below 19
-        const crypto = await import(/* webpackIgnore: true */ "crypto");
-        _syncCrypto = crypto.webcrypto;
+        const crypto = await import(/* webpackIgnore: true */ 'crypto');
+        _syncCrypto = crypto.webcrypto
       }
       const array = new Uint8Array(DEFAULT_PRNG_POOL_SIZE);
       _syncCrypto.getRandomValues(array);
       prngPool = array;
     } catch (error) {
-      throw new Error("no available csprng, abort.");
+      throw new Error('no available csprng, abort.');
     }
   }
 }
 
-initRNGPool();
+initRNGPool()
 
 function consumePool(length: number): Uint8Array {
   if (prngPool.length > length) {
-    const prng = prngPool.slice(0, length);
-    prngPool = prngPool.slice(length);
-    initRNGPool();
-    return prng;
+    const prng = prngPool.slice(0, length)
+    prngPool = prngPool.slice(length)
+    initRNGPool()
+    return prng
   } else {
-    throw new Error(
-      "random number pool is not ready or insufficient, prevent getting too long random values or too often."
-    );
+    throw new Error('random number pool is not ready or insufficient, prevent getting too long random values or too often.')
   }
 }
 
@@ -76,7 +75,7 @@ export function randomBytes(length = 0): Uint8Array {
     return _syncCrypto.getRandomValues(array);
   } else {
     // no sync crypto available, use async pool
-    const result = consumePool(length);
-    return result;
+    const result = consumePool(length)
+    return result
   }
 }

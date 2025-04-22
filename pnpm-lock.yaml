@@ -17,18 +17,12 @@ importers:
       '@ethersproject/wordlists':
         specifier: ^5.7.0
         version: 5.8.0
-      '@types/jsbn':
-        specifier: ^1.2.33
-        version: 1.2.33
       axios:
         specifier: ^1.8.4
         version: 1.8.4
       ethereum-cryptography:
         specifier: ^3.0.0
         version: 3.1.0
-      jsbn:
-        specifier: ^1.1.0
-        version: 1.1.0
     devDependencies:
       '@babel/preset-typescript':
         specifier: ^7.24.7
@@ -312,9 +306,6 @@ packages:
 
   '@types/chai@4.3.20':
     resolution: {integrity: sha512-/pC9HAB5I/xMlc5FP77qjCnI16ChlJfW0tGa0IUcFn38VJrTV6DeZ60NU5KZBtaOZqjdpwTWohz5HU1RrhiYxQ==}
-
-  '@types/jsbn@1.2.33':
-    resolution: {integrity: sha512-ZlLkHfu8xqqVFSbCe1FSPtAMUs7LKxk7TPskMb+sI5IbuzqyVqIEt9SVaQfFD2vrFcQunqKAmEBOuBEkoNLw4g==}
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
@@ -719,9 +710,6 @@ packages:
   js-yaml@4.1.0:
     resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
     hasBin: true
-
-  jsbn@1.1.0:
-    resolution: {integrity: sha512-4bYVV3aAMtDTTu4+xsDYa6sy9GyJ69/amsu9sYF2zqjiEoZA5xJi3BrfX3uY+/IekIu7MwdObdbDWpoZdBv3/A==}
 
   jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
@@ -1394,8 +1382,6 @@ snapshots:
 
   '@types/chai@4.3.20': {}
 
-  '@types/jsbn@1.2.33': {}
-
   '@types/json5@0.0.29':
     optional: true
 
@@ -1769,8 +1755,6 @@ snapshots:
   js-yaml@4.1.0:
     dependencies:
       argparse: 2.0.1
-
-  jsbn@1.1.0: {}
 
   jsesc@3.1.0: {}
 
