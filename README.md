@@ -6,7 +6,11 @@
     <img alt="Static Badge" src="https://img.shields.io/badge/Node.js-v18.19.0-green">
 </div>
 
+<div style="display:flex; justify-content:center; align-items: center; margin-top: 8px">
+
 [![cov](https://wylu1037.github.io/lattice-js/badges/coverage.svg)](https://github.com/wylu1037/lattice-js/actions)
+
+</div>
 
 ## Intro
 
