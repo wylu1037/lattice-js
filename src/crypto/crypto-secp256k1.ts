@@ -1,4 +1,5 @@
-import { CryptoService, KeyPair } from "./crypto";
+import { CryptoService } from "./crypto";
+import { KeyPair } from "./types";
 import { secp256k1 } from "ethereum-cryptography/secp256k1";
 import { randomBytes } from "@noble/hashes/utils";
 import { BigInteger } from "jsbn";

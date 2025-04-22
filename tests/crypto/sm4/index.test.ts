@@ -2,7 +2,7 @@ import { sm4 } from "../../../src/crypto/index";
 import { expect } from "chai";
 import { describe, it } from "mocha";
 
-describe("SM4", () => {
+describe("crypto.sm4", () => {
   describe("encrypt with ecb", () => {
     it("should return the correct hash", () => {
       const actual = sm4.encrypt("hello", "31323334353637383930313233343536");

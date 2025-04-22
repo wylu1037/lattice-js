@@ -247,6 +247,7 @@ export interface SM4Options {
 }
 
 const blockOutput = new Uint8Array(16);
+
 export function sm4(
   inArray: Uint8Array | string,
   key: Uint8Array | string,
@@ -390,11 +391,13 @@ export function decrypt(
   key: Uint8Array | string,
   options?: { output: "array" } & SM4Options
 ): Uint8Array;
+
 export function decrypt(
   inArray: Uint8Array | string,
   key: Uint8Array | string,
   options?: { output: "string" } & SM4Options
 ): string;
+
 export function decrypt(
   inArray: Uint8Array | string,
   key: Uint8Array | string,

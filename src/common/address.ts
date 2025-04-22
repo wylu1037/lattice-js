@@ -26,7 +26,6 @@ class Address {
   }
 
   // convert zltc address to eth address
-  // Returns: eth address
   toETH(): string {
     if (!this.address) {
       return ADDRESS_TITLE;

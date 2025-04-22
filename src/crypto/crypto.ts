@@ -1,13 +1,7 @@
-export interface KeyPair {
-  // 32 bytes
-  privateKey: Buffer;
-  // 65 bytes, uncompressed public key
-  publicKey: Buffer;
-}
+import { KeyPair } from "./types";
 
 export interface CryptoService {
-  // generate key pair
-  // return private key and public key
+  // generate key pair, return private key and public key
   generateKeyPair(): KeyPair;
 
   // compress public key

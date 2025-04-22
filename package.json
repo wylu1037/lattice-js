@@ -36,7 +36,7 @@
     "@ethersproject/sha2": "^5.7.0",
     "@ethersproject/wordlists": "^5.7.0",
     "@types/jsbn": "^1.2.33",
-    "axios": "^1.7.7",
+    "axios": "^1.8.4",
     "ethereum-cryptography": "^3.0.0",
     "jsbn": "^1.1.0"
   }

@@ -1,6 +1,6 @@
 import { sm2 } from "../../../src/crypto/index";
 
-describe("SM2", () => {
+describe("crypto.sm2", () => {
   describe("generate keypair", () => {
     it("should work", () => {
       const keypair = sm2.generateKeyPairHex();
