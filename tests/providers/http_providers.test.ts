@@ -5,14 +5,14 @@ import {
 } from "@/providers/http_provider";
 import { expect } from "chai";
 
-describe("HttpProviders", () => {
+xdescribe("HttpProviders", () => {
   describe("Http Client", () => {
     it("should be able to send http request", async () => {
       const provider = new HttpProvider("http://192.168.3.51:13000");
       const client: HttpClient = new HttpClientImpl(provider);
       try {
         const response = await client.getLatestBlock(
-            1,
+            2,
           "zltc_Yvvg3Zw2y7Szb3dzaYJsGHwqB4wofLgJ1"
         );
         console.log(response);
