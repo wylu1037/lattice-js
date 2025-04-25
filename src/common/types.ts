@@ -1,10 +1,10 @@
 // latest block info
 export interface LatestBlock {
-  // latest transaction height associated with account
+  // latest transaction height associated with an account
   currentTBlockNumber: number;
-  // latest transaction block hash associated with account
+  // latest transaction block hash associated with an account
   currentTBlockHash: string;
-  // latest daemon block hash associated with account
+  // latest daemon block hash associated with an account
   currentDBlockHash: string;
 }
 

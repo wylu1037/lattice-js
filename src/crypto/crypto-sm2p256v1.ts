@@ -1,7 +1,11 @@
-import { log } from "@/logger";
-import { CryptoService } from "./crypto";
-import { compressPublicKeyHex, generateKeyPairHex } from "./sm2";
-import { KeyPair } from "./types";
+import {log} from "@/logger";
+import {CryptoService} from "./crypto";
+import {compressPublicKeyHex, generateKeyPairHex} from "./sm2";
+import {KeyPair} from "./types";
+import sm3 from "@/crypto/sm3";
+import {Base58Impl, Base58Interface} from "@/common/base58";
+import {ADDRESS_BYTES_LENGTH, ADDRESS_TITLE} from "@/common/constants";
+import { ADDRESS_VERSION } from "@/common/constants";
 
 export class GM implements CryptoService {
   generateKeyPair(): KeyPair {
@@ -19,5 +23,25 @@ export class GM implements CryptoService {
     }
     const compressedPublicKey = compressPublicKeyHex(publicKey.toString("hex"));
     return Buffer.from(compressedPublicKey, "hex");
+  }
+
+  publicKeyToAddress(publicKey: Buffer | string): string {
+    if (typeof publicKey === "string") {
+      publicKey = Buffer.from(publicKey, "hex");
+    }
+
+    if (publicKey.length > 64) {
+      publicKey = publicKey.subarray(publicKey.length-64);
+    }
+
+    const bs = this.hash(publicKey);
+    const base58: Base58Interface = new Base58Impl();
+    const address = base58.checkEncode(bs.subarray(bs.length-ADDRESS_BYTES_LENGTH), ADDRESS_VERSION);
+    return `${ADDRESS_TITLE}_${address}`;
+  }
+
+  hash(data: Buffer): Buffer {
+    const hash =  sm3(data); // 杂凑
+    return Buffer.from(hash, "hex");
   }
 }

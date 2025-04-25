@@ -15,6 +15,7 @@ describe("crypto.sm2p256v1", () => {
       log.info("privateKey: " + privateKey.toString("hex"));
       log.info("publicKey: " + publicKey.toString("hex"));
       log.info("compressedPublicKey: " + compressedPublicKey.toString("hex"));
+      log.info("address: " + crypto.publicKeyToAddress(publicKey));
       expect(privateKey.length).to.equal(expectedPrivateKeySize);
       expect(publicKey.length).to.equal(expectedPublicKeySize);
       expect(compressedPublicKey.length).to.equal(expectedCompressedPublicKeySize); 
