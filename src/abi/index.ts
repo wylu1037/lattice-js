@@ -1,0 +1,1 @@
+export { encodeBytes32String, decodeBytes32String } from "./bytes32.js";

@@ -8,9 +8,8 @@
  *  @_section: api/utils/errors:Errors  [about-errors]
  */
 
-import { version } from "../_version";
-import { defineProperties } from "./properties";
-
+import { version } from "@/_version";
+import { defineProperties } from "@/utils/properties";
 
 /**
  *  An error may contain additional properties, but those must not

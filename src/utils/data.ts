@@ -4,26 +4,8 @@
  *
  *  @_subsection api/utils:Data Helpers  [about-data]
  */
+import {BytesLike, hexlify} from "@ethersproject/bytes";
 import { assert, assertArgument } from "./errors.js";
-
-/**
- *  A [[HexString]] whose length is even, which ensures it is a valid
- *  representation of binary data.
- */
-export type DataHexString = string;
-
-/**
- *  A string which is prefixed with ``0x`` and followed by any number
- *  of case-agnostic hexadecimal characters.
- *
- *  It must match the regular expression ``/0x[0-9A-Fa-f]*\/``.
- */
-export type HexString = string;
-
-/**
- *  An object that can be used to represent binary data.
- */
-export type BytesLike = DataHexString | Uint8Array;
 
 function _getBytes(value: BytesLike, name?: string, copy?: boolean): Uint8Array {
     if (value instanceof Uint8Array) {
@@ -83,30 +65,6 @@ export function isHexString(value: any, length?: number | boolean): value is `0x
     if (length === true && (value.length % 2) !== 0) { return false; }
 
     return true;
-}
-
-/**
- *  Returns true if %%value%% is a valid representation of arbitrary
- *  data (i.e. a valid [[DataHexString]] or a Uint8Array).
- */
-export function isBytesLike(value: any): value is BytesLike {
-    return (isHexString(value, true) || (value instanceof Uint8Array));
-}
-
-const HexCharacters: string = "0123456789abcdef";
-
-/**
- *  Returns a [[DataHexString]] representation of %%data%%.
- */
-export function hexlify(data: BytesLike): string {
-    const bytes = getBytes(data);
-
-    let result = "0x";
-    for (let i = 0; i < bytes.length; i++) {
-        const v = bytes[i];
-        result += HexCharacters[(v & 0xf0) >> 4] + HexCharacters[v & 0x0f];
-    }
-    return result;
 }
 
 /**

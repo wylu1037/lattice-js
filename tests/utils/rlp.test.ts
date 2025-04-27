@@ -1,12 +1,11 @@
-import { encodeRlp } from "@/utils/rlp-encode";
-import { decodeRlp } from "@/utils/rlp-decode";
+import { encode,decode } from "@ethersproject/rlp";
 import { expect } from "chai";
 
 describe("rlp", () => {
     it("should encode and decode number array", () => {
         const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        const encoded = encodeRlp(Uint8Array.from(data));
-        const decoded = decodeRlp(encoded);
+        const encoded = encode(Uint8Array.from(data));
+        const decoded = decode(encoded);
         if (typeof decoded === "string") {
             expect(decoded).to.equal(`0x${Buffer.from(data).toString("hex")}`);
         } else {

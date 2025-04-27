@@ -1,8 +1,12 @@
-import { CryptoService } from "./crypto";
+import {CryptoService, EncodeFunc} from "./crypto";
 import { KeyPair } from "./types";
 import { secp256k1 } from "ethereum-cryptography/secp256k1";
 import { randomBytes } from "@noble/hashes/utils";
 import { log } from "@/logger";
+import {Base58Impl, Base58Interface} from "@/utils/base58";
+import {ADDRESS_BYTES_LENGTH, ADDRESS_TITLE, ADDRESS_VERSION} from "@/common/constants";
+import sm3 from "@/crypto/sm3";
+import {doSignature, doVerifySignature} from "@/crypto/sm2";
 export class NIST implements CryptoService {
   generateKeyPair(): KeyPair {
     // Generate a random private key
@@ -50,5 +54,25 @@ export class NIST implements CryptoService {
     }
 
     return Buffer.from(`${prefix}${x.toString("hex")}`, "hex");
+  }
+
+  publicKeyToAddress(publicKey: Buffer | string): string {
+    return "";
+  }
+
+  hash(data: Buffer): Buffer {
+    return Buffer.from("01", "hex");
+  }
+
+  encodeHash(encodeFunc: EncodeFunc): Buffer {
+    return Buffer.from("01", "hex");
+  }
+
+  sign(data: Buffer, privateKey: string): string {
+    return "";
+  }
+
+  verify(data: Buffer, signature: string, uncompressedPublicKey: string): boolean {
+    return true
   }
 }
