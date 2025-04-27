@@ -1,6 +1,6 @@
 import { describe, it } from "mocha";
 import { expect } from "chai";
-import { convertBigIntToHexString } from "../../src/common/converter";
+import { convertBigIntToHexString } from "../../src/utils/converter";
 
 describe("Converter", () => {
   describe("convertBigIntegerToHexString", () => {

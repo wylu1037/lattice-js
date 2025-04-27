@@ -1,16 +1,21 @@
 import { ADDRESS_TITLE, ADDRESS_VERSION, HEX_PREFIX } from './constants';
-import { Base58Impl, Base58Interface } from './base58';
+import { Base58Impl, Base58Interface } from '../utils/base58';
 
 // This is a address class. Can be converted to eth address or zltc address
 class Address {
-  // eth address or zltc address
+  /**
+   * @description eth address or zltc address, zltc address is like 'zltc_nFgGmfSks6uQPT5hqMRQ8fdkKMprSUdbN', eth address is like '0xF0644429e1Ce447c607d588564D8409b7261e7b8'
+   */
   address: string;
 
   constructor(address: string) {
     this.address = address;
   }
 
-  // convert eth address to zltc address
+  /**
+   * @description convert eth address to zltc address,
+   * @returns {string} zltc address
+   */
   toZLTC(): string {
     if (!this.address) {
       return HEX_PREFIX;
@@ -25,7 +30,10 @@ class Address {
     return this.address;
   }
 
-  // convert zltc address to eth address
+  /**
+   * @description convert zltc address to eth address,
+   * @returns {string} eth address
+   */
   toETH(): string {
     if (!this.address) {
       return ADDRESS_TITLE;

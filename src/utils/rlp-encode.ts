@@ -1,6 +1,6 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
-import { getBytes } from "./data";
+import { getBytes } from "../utils/data";
 import type { RlpStructuredDataish } from "./rlp";
 
 

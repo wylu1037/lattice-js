@@ -1,8 +1,8 @@
 //See: https://github.com/ethereum/wiki/wiki/RLP
 
-import { hexlify } from "./data";
+import { hexlify } from "../utils/data";
 import { assert, assertArgument } from "./errors";
-import { getBytes } from "./data";
+import { getBytes } from "../utils/data";
 
 import type { BytesLike, RlpStructuredData } from "./index";
 

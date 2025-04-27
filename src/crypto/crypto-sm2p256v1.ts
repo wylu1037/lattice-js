@@ -3,7 +3,7 @@ import {CryptoService} from "./crypto";
 import {compressPublicKeyHex, generateKeyPairHex, doSignature, doVerifySignature} from "./sm2";
 import {KeyPair} from "./types";
 import sm3 from "@/crypto/sm3";
-import {Base58Impl, Base58Interface} from "@/common/base58";
+import {Base58Impl, Base58Interface} from "@/utils/base58";
 import {ADDRESS_BYTES_LENGTH, ADDRESS_TITLE} from "@/common/constants";
 import { ADDRESS_VERSION } from "@/common/constants";
 import { EncodeFunc } from "./crypto";

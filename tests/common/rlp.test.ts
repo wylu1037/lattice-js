@@ -1,5 +1,5 @@
-import { encodeRlp } from "@/common/rlp-encode";
-import { decodeRlp } from "@/common/rlp-decode";
+import { encodeRlp } from "@/utils/rlp-encode";
+import { decodeRlp } from "@/utils/rlp-decode";
 import { expect } from "chai";
 
 describe("rlp", () => {

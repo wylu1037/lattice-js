@@ -8,7 +8,7 @@
     "/dist"
   ],
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --loader=tsx",
     "build": "tsc",
     "lint": "tslint -p tsconfig.json",
     "coverage": "c8 mocha"
@@ -26,8 +26,8 @@
     "@types/node": "^20.16.7",
     "@types/pino": "^7.0.5",
     "c8": "^10.1.3",
-    "chai": "^5.1.1",
-    "mocha": "^10.7.3",
+    "chai": "^5.2.0",
+    "mocha": "^11.1.0",
     "ts-mocha": "^10.0.0",
     "tslint": "^6.1.3",
     "tsx": "^4.19.3",

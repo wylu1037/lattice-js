@@ -7,7 +7,7 @@
     "node_modules"
   ],
   "compilerOptions": {
-    "target": "ES5",
+    "target": "ES2024",
     "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
