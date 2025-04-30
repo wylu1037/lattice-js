@@ -1,5 +1,5 @@
 import { Interface } from "@ethersproject/abi";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 describe("abi encode", () => {
     it("should encode", () => {
@@ -12,7 +12,7 @@ describe("abi encode", () => {
             '0x1234567890123456789012345678901234567890',
             1000n
           ]);
-          const expected = "0xa9059cbb00000000000000000000000012345678901234567890123456789012345678900000000000000000000000000000000000000000000000000000000000003e8";
-          expect(data).to.equal(expected);
+          const expected = "0xa9059cbb000000000000000000000000123456789012345678901234567890123456789000000000000000000000000000000000000000000000000000000000000003e8";
+          expect(data).toBe(expected);
     });
 });

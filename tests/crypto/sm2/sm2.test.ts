@@ -1,16 +1,21 @@
 import { sm2 } from "@/crypto/index";
 import { log } from "@/logger";
+import { describe, expect, it } from "vitest";
 
 describe("crypto.sm2", () => {
   describe("generate keypair", () => {
     it("should work", () => {
       const keypair = sm2.generateKeyPairHex();
-      let unCompressedPublicKey = keypair.publicKey;
-      let privateKey = keypair.privateKey;
-      let compressedPublicKey = sm2.compressPublicKeyHex(unCompressedPublicKey);
-      log.info("unCompressedPublicKey: ", unCompressedPublicKey);
-      log.info("compressedPublicKey: ", compressedPublicKey);
-      log.info("privateKey: ", privateKey);
+      const unCompressedPublicKey = keypair.publicKey;
+      const privateKey = keypair.privateKey;
+      const compressedPublicKey = sm2.compressPublicKeyHex(unCompressedPublicKey);
+      log.info(`unCompressedPublicKey: ${unCompressedPublicKey}`);
+      log.info(`compressedPublicKey: ${compressedPublicKey}`);
+      log.info(`privateKey: ${privateKey}`);
+      
+      expect(unCompressedPublicKey).toBeDefined();
+      expect(privateKey).toBeDefined();
+      expect(compressedPublicKey).toBeDefined();
     });
   });
 
@@ -18,17 +23,19 @@ describe("crypto.sm2", () => {
     it("should work", () => {
       const msgString = "hello";
       const keypair = sm2.generateKeyPairHex();
-      let privateKey = keypair.privateKey;
-      let unCompressedPublicKey = keypair.publicKey;
+      const privateKey = keypair.privateKey;
+      const unCompressedPublicKey = keypair.publicKey;
       const signature = sm2.doSignature(msgString, privateKey);
-      log.info("signature: ", signature);
+      log.info(`signature: ${signature}`);
 
-      let verifyResult = sm2.doVerifySignature(
+      const verifyResult = sm2.doVerifySignature(
         msgString,
         signature,
         unCompressedPublicKey
       );
-      log.info("verifyResult: ", verifyResult);
+      log.info(`verifyResult: ${verifyResult}`);
+      
+      expect(verifyResult).toBe(true);
     });
   });
 });

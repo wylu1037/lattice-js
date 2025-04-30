@@ -1,8 +1,7 @@
-import { describe, it } from "mocha";
-import { expect } from "chai";
-import { Base58Impl, Base58Interface } from "../../src/utils/base58.js";
-import { ADDRESS_TITLE, ADDRESS_VERSION } from "../../src/common/constants";
+import { describe, expect, it } from "vitest";
 import { Address } from "../../src/common/address";
+import { ADDRESS_TITLE, ADDRESS_VERSION } from "../../src/common/constants";
+import { Base58Impl, Base58Interface } from "../../src/utils/base58.js";
 
 describe("Base58", () => {
   describe("checksum", () => {
@@ -11,7 +10,7 @@ describe("Base58", () => {
       const out = base58.checksum(Buffer.from("Hello World", "utf-8"));
       const actual = out.toString("hex");
       const expected = "42a873ac";
-      expect(actual).to.equal(expected);
+      expect(actual).toBe(expected);
     });
 
     it("should convert eth to zltc", () => {
@@ -25,7 +24,7 @@ describe("Base58", () => {
         ADDRESS_VERSION
       )}`;
       const expected = "zltc_dhdfbm9JEoyDvYoCDVsABiZj52TAo9Ei6";
-      expect(actual).to.equal(expected);
+      expect(actual).toBe(expected);
     });
 
     it("should convert zltc to eth", () => {
@@ -33,7 +32,7 @@ describe("Base58", () => {
       const address = new Address(zltc);
       const actual = address.toETH();
       const expected = "0x9293c604c644BfAc34F498998cC3402F203d4D6B";
-      expect(actual).to.equal(expected.toLowerCase());
+      expect(actual).toBe(expected.toLowerCase());
     });
   });
 });

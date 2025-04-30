@@ -1,5 +1,5 @@
 import { Interface } from "@ethersproject/abi";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 describe("abi decode", () => {
     it("should decode", () => {
@@ -9,6 +9,6 @@ describe("abi decode", () => {
         const iface = new Interface(abi);
         const returnData = '0x0000000000000000000000000000000000000000000000000000000000000001';
         const result = iface.decodeFunctionResult('transfer', returnData);
-        expect(result).deep.equal([true]);
+        expect(result).toEqual([true]);
     });
 });

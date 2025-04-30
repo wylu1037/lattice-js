@@ -1,5 +1,5 @@
-import { encode,decode } from "@ethersproject/rlp";
-import { expect } from "chai";
+import { decode, encode} from "@ethersproject/rlp";
+import { describe, expect, it } from "vitest";
 
 describe("rlp", () => {
     it("should encode and decode number array", () => {
@@ -7,9 +7,9 @@ describe("rlp", () => {
         const encoded = encode(Uint8Array.from(data));
         const decoded = decode(encoded);
         if (typeof decoded === "string") {
-            expect(decoded).to.equal(`0x${Buffer.from(data).toString("hex")}`);
+            expect(decoded).toBe(`0x${Buffer.from(data).toString("hex")}`);
         } else {
-            expect(decoded).to.deep.equal(data);
+            expect(decoded).toEqual(data);
         }
     });
 }); 
