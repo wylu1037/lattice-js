@@ -1,11 +1,11 @@
-import {ADDRESS_BYTES_LENGTH, ADDRESS_TITLE} from "@/common/constants";
+import {ADDRESS_BYTES_LENGTH, ADDRESS_TITLE, SM2P256V1_SIGNATURE_LENGTH, SM2P256V1_SIGNATURE_REMARK} from "@/common/constants";
 import { ADDRESS_VERSION } from "@/common/constants";
 import sm3 from "@/crypto/sm3";
 import {log} from "@/logger";
 import {Base58Impl, type Base58Interface} from "@/utils/base58";
 import type {CryptoService} from "./crypto";
 import type { EncodeFunc } from "./crypto";
-import {compressPublicKeyHex, doSignature, doVerifySignature, generateKeyPairHex } from "./sm2";
+import {compressPublicKeyHex, doSignature, doVerifySignature, generateKeyPairHex, getHash, getPublicKeyFromPrivateKey } from "./sm2";
 import type {KeyPair} from "./types";
 
 export class GM implements CryptoService {
@@ -48,7 +48,7 @@ export class GM implements CryptoService {
   }
 
   hash(data: Buffer): Buffer {
-    const hash =  sm3(data); // 杂凑
+    const hash = sm3(data); // 杂凑
     return Buffer.from(hash, "hex");
   }
 
@@ -62,7 +62,20 @@ export class GM implements CryptoService {
     if (buffer.length !== 32) {
       throw new Error(`Invalid private key length, expected size is 32, but actual size is ${buffer.length}`);
     }
-    return doSignature(data, privateKey);
+    const signature = doSignature(data, privateKey);
+    const signatureBuffer = Buffer.alloc(SM2P256V1_SIGNATURE_LENGTH);
+    signatureBuffer.write(signature, 0, 64, "hex"); // r、s
+    signatureBuffer.write(SM2P256V1_SIGNATURE_REMARK, 64, 1, "hex"); // remark
+
+    // calculate e point
+    const publicKey = getPublicKeyFromPrivateKey(privateKey);
+    const hashHex = getHash(data, publicKey);
+
+    signatureBuffer.write(hashHex, 65, 32, "hex");
+    if (signatureBuffer.length !== SM2P256V1_SIGNATURE_LENGTH) {
+      throw new Error(`Invalid signature length, expected size is ${SM2P256V1_SIGNATURE_LENGTH}, but actual size is ${signatureBuffer.length}`);
+    }
+    return signatureBuffer.toString("hex");
   }
 
   verify(data: Buffer, signature: string, uncompressedPublicKey: string): boolean {

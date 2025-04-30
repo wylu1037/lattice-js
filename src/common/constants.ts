@@ -6,8 +6,13 @@ export const ADDRESS_VERSION: number = 1;
 export const ADDRESS_BYTES_LENGTH = 20;
 // The prefix of hex string
 export const HEX_PREFIX: string = '0x';
+// The remark of sm2p256v1 signature, hex string
+export const SM2P256V1_SIGNATURE_REMARK: string = '01';
+// The length of the sm2p256v1 signature
+export const SM2P256V1_SIGNATURE_LENGTH: number = 97;
 
 export const ZERO_HASH: string = '0x0000000000000000000000000000000000000000000000000000000000000000';
+export const ZERO_ADDRESS: string = 'zltc_QLbz7JHiBTspS962RLKV8GndWFwjA5K66';
 
 export const TransactionTypes = {
     Genesis: 'genesis', // 创世纪交易
@@ -30,3 +35,10 @@ export const TransactionTypeCodeRecord: Record<TransactionType, number> = {
     [TransactionTypes.CallContract]: 5,
     [TransactionTypes.UpgradeContract]: 6,
 } as const;
+
+export const Curves = {
+    Secp256k1: 'Secp256k1',
+    Sm2p256v1: 'Sm2p256v1',
+} as const;
+
+export type Curve = typeof Curves[keyof typeof Curves];

@@ -28,7 +28,9 @@ describe("crypto.sm2p256v1", () => {
       const data = Buffer.from("hello", "utf-8");
       const signature = crypto.sign(data, privateKey);
       const result = crypto.verify(data, signature, uncompressedPublicKey);
+      console.log("result", result);
       expect(result).toBe(true);
+      // e86f2d5fae7dba2da2d663332dbaa18fb70b19610eda4abc3737df121cca92f475b0bed5a6ff93af1585ae598127e1a82c5fc3a5d69ecb636ed9191b3cdb06ca
     });
   });
 });

@@ -1,5 +1,5 @@
+import { LatestBlock, Transaction } from "@/common/types/index"
 import { log } from "@/logger";
-import { Transaction, LatestBlock } from "@/common/types/index"
 import axios, { AxiosRequestHeaders, AxiosResponse } from "axios";
 
 // json-rpc id
@@ -51,9 +51,8 @@ class HttpProvider {
     } catch (error) {
       if (error instanceof Error) {
         throw error;
-      } else {
-        throw new Error("Unknown error");
-      }
+      } 
+      throw new Error("Unknown error");
     }
   }
 
@@ -64,18 +63,21 @@ class HttpProvider {
   ): Promise<AxiosResponse> {
     log.debug("发起HTTP请求，请求地址：%s，请求体：%o", this.baseUrl, jsonRpcBody);
     try {
-      const response = await axios.post(this.baseUrl, jsonRpcBody, {
-        headers: headers || {},
-      });
+      const response = await axios.post(
+        this.baseUrl, 
+        jsonRpcBody, 
+        {
+          headers: headers || {},
+        }
+      );
       log.debug("HTTP请求成功，响应状态码：%d，响应体：%o", response.status, response.data);
       return response;
     } catch (error) {
       if (error instanceof Error) {
         throw error;
-      } else {
-        log.error("HTTP请求失败，错误信息：%o", error);
-        throw new Error("Unknown error");
-      }
+      } 
+      log.error("HTTP请求失败，错误信息：%o", error);
+      throw new Error("Unknown error");
     }
   }
 }
@@ -189,10 +191,10 @@ class HttpClientImpl implements HttpClient {
 }
 
 export {
-  JsonRpcBody,
-  JsonRpcResponse,
-  JsonRpcError,
+  type JsonRpcBody,
+  type JsonRpcResponse,
+  type JsonRpcError,
   HttpProvider,
-  HttpClient,
+  type HttpClient,
   HttpClientImpl,
 };

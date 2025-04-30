@@ -9,10 +9,7 @@ export const AddressSchema = z.union([
 ]);
 export type Address = z.infer<typeof AddressSchema>;
 
-export const UInt64Schema = z.bigint()
-.refine(val => val >= 0n, "Must be positive or zero")
-.refine(val => val <= 18446744073709551615n, "Value too large for uint64");
+export const UInt64Schema = z.number()
+  .refine(val => val >= 0, "Must be positive or zero")
+  .refine(val => val <= Number.MAX_SAFE_INTEGER, "Value too large for uint64");
 export type UInt64 = z.infer<typeof UInt64Schema>;
-
-export const CurveSchema = z.enum(["Secp256k1", "Sm2p256v1"]);
-export type Curve = z.infer<typeof CurveSchema>;

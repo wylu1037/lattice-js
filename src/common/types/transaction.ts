@@ -1,9 +1,13 @@
 import { Address as Addr } from "@/common/address";
-import { type TransactionType, TransactionTypeCodeRecord, TransactionTypes } from "@/common/constants";
+import { type TransactionType, TransactionTypeCodeRecord, TransactionTypes, ZERO_ADDRESS, ZERO_HASH } from "@/common/constants";
+import { type Curve } from "@/common/constants";
 import { E, O } from "@/common/types/index";
-import type { Address, Curve, Hash, UInt64 } from "@/common/types/type.alias";
+import type { Address, Hash, UInt64 } from "@/common/types/type.alias";
 import { newCrypto } from "@/crypto/crypto";
+import { BigNumber } from '@ethersproject/bignumber';
+import { arrayify, hexlify, stripZeros } from '@ethersproject/bytes'
 import { encode as rlpEncode } from "@ethersproject/rlp";
+
 export class Transaction {
   number?: number;
   type: TransactionType;
@@ -11,19 +15,19 @@ export class Transaction {
   hub?: Address[];
   daemonHash?: Hash;
   codeHash?: Hash;
-  owner?: Address;
-  linker?: Address;
+  owner: Address;
+  linker: Address;
   amount?: UInt64;
   joule?: UInt64;
   difficulty?: UInt64;
   pow?: UInt64;
-  proofOfWork?: UInt64;
+  proofOfWork?: string;
   payload?: string;
   timestamp?: UInt64;
   code?: string;
   sign?: string;
 
-  constructor(number: number, type: TransactionType, parentHash: Hash, hub: Address[], daemonHash: Hash, codeHash: Hash, owner: Address, linker: Address, amount: UInt64, joule: UInt64, difficulty: UInt64, pow: UInt64, proofOfWork: UInt64, payload: string, timestamp: UInt64, code: string, sign: string) {
+  constructor(number: number, type: TransactionType, parentHash: Hash, hub: Address[], daemonHash: Hash, codeHash: Hash, owner: Address, linker: Address, amount: UInt64, joule: UInt64, difficulty: UInt64, pow: UInt64, proofOfWork: string, payload: string, timestamp: UInt64, code: string, sign: string) {
     this.number = number;
     this.type = type;
     this.parentHash = parentHash;
@@ -54,16 +58,16 @@ export class Transaction {
       "",
       [],
       "",
+      ZERO_HASH, // codeHash
+      ZERO_ADDRESS, // owner
+      ZERO_ADDRESS, // linker
+      0,
+      0,
+      0,
+      0,
+      "0x",
       "",
-      "",
-      "",
-      BigInt(0),
-      BigInt(0),
-      BigInt(0),
-      BigInt(0),
-      BigInt(0),
-      "",
-      BigInt(0),
+      Date.now(),
       "",
       "",
     );
@@ -110,40 +114,49 @@ export class Transaction {
   doSign(curve: Curve, hash: Buffer, privateKey: string): E.Either<Buffer, Error> {
       try {
           const cryptoService = newCrypto(curve);
-          const signature = cryptoService.sign(hash, privateKey);
+          let _privateKey = privateKey;
+          if (_privateKey.startsWith("0x")) {
+            _privateKey = _privateKey.slice(2);
+          }
+          const signature = cryptoService.sign(hash, _privateKey);
           return E.left(Buffer.from(signature, "hex"));
       } catch (error) {
           return E.right(error as Error);
       }
   }
 
+  handleNumber(value: number | Uint8Array): Uint8Array {
+    return stripZeros(arrayify(BigNumber.from(value)));
+  }
+  
+
   public rlpEncodeHash(chainId: number, curve: Curve): Buffer {
     const cryptoService = newCrypto(curve);
     const encoded = cryptoService.encodeHash(() => {
       const encoded = rlpEncode(
          [
-            this.number,
-            this.getTypeCode(),
+            this.handleNumber(this.number ?? 0),
+            hexlify(this.getTypeCode()),
             this.parentHash,
             this.hub, 
             this.daemonHash,
-            this.codeHash,
-            new Addr(this.owner ?? "").toETH(),
-            new Addr(this.linker ?? "").toETH(),
-            this.amount,
-            this.joule, 
-            this.difficulty, 
-            this.proofOfWork, 
-            this.payload, 
-            this.timestamp,
-            chainId, 
-            0,
-            0
+            this.codeHash || ZERO_HASH,
+            new Addr(this.owner).toETH(),
+            new Addr(this.linker).toETH(),
+            this.handleNumber(this.amount ?? 0),
+            this.handleNumber(this.joule ?? 0), 
+            this.handleNumber(0), // difficulty
+            this.handleNumber(0), // proofOfWork
+            this.payload,
+            this.handleNumber(this.timestamp ?? 0),
+            this.handleNumber(chainId), 
+            "0x",
+            "0x"
           ]
       );
-      return Buffer.from(encoded, "hex");
+      return Buffer.from(encoded.substring(2), "hex");
     });
-
+    
     return encoded;
   }
 }

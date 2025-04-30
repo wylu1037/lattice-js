@@ -1,20 +1,26 @@
-import { type Curve, CurveSchema } from "@/common/types/index";
+import { type Curve, Curves } from "@/common/constants";
 import { NIST } from "./crypto-secp256k1";
 import { GM } from "./crypto-sm2p256v1";
 import type { KeyPair } from "./types";
 
 const cryptoServiceMap = new Map<Curve, CryptoService>();
 
+/**
+ * Create a new crypto service instance based on the curve
+ * 
+ * @param curve The curve, like `Curves.Secp256k1` or `Curves.Sm2p256v1`
+ * @returns The crypto service
+ */
 export function newCrypto(curve: Curve): CryptoService {
   if (cryptoServiceMap.has(curve)) {
     return cryptoServiceMap.get(curve) as CryptoService;
   }
 
   switch (curve) {
-    case CurveSchema.Enum.Secp256k1:
+    case Curves.Secp256k1:
       cryptoServiceMap.set(curve, new NIST());
       return cryptoServiceMap.get(curve) as CryptoService;
-    case CurveSchema.Enum.Sm2p256v1:
+    case Curves.Sm2p256v1:
       cryptoServiceMap.set(curve, new GM());
       return cryptoServiceMap.get(curve) as CryptoService;
     default:
