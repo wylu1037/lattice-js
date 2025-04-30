@@ -7,8 +7,8 @@ export function bigintToValue(bigint: bigint) {
   let h = bigint.toString(16)
   if (h[0] !== '-') {
     // 正数
-    if (h.length % 2 === 1) h = '0' + h // 补齐到整字节
-    else if (!h.match(/^[0-7]/)) h = '00' + h // 非0开头，则补一个全0字节
+    if (h.length % 2 === 1) h = `0${h}` // 补齐到整字节
+    else if (!h.match(/^[0-7]/)) h = `00${h}` // 非0开头，则补一个全0字节
   } else {
     // 负数
     h = h.substring(1)
@@ -18,11 +18,10 @@ export function bigintToValue(bigint: bigint) {
 
     let maskString = ''
     for (let i = 0; i < len; i++) maskString += 'f'
-    let mask = utils.hexToNumber(maskString)
+    const mask = utils.hexToNumber(maskString)
 
     // 对绝对值取反，加1
-    
-    let output = (mask ^ bigint) + ONE
+    const output = (mask ^ bigint) + ONE
     h = output.toString(16).replace(/^-/, '')
   }
   return h
@@ -51,16 +50,15 @@ class ASN1Object {
   getLength() {
     const n = this.v.length / 2 // 字节数
     let nHex = n.toString(16)
-    if (nHex.length % 2 === 1) nHex = '0' + nHex // 补齐到整字节
+    if (nHex.length % 2 === 1) nHex = `0${nHex}` // 补齐到整字节
 
     if (n < 128) {
       // 短格式，以 0 开头
       return nHex
-    } else {
-      // 长格式，以 1 开头
-      const head = 128 + nHex.length / 2 // 1(1位) + 真正的长度占用字节数(7位) + 真正的长度
-      return head.toString(16) + nHex
     }
+    // 长格式，以 1 开头
+    const head = 128 + nHex.length / 2 // 1(1位) + 真正的长度占用字节数(7位) + 真正的长度
+    return `${head.toString(16)}${nHex}`
   }
 
   getValue() {
@@ -82,7 +80,7 @@ class DERInteger extends ASN1Object {
 }
 
 class DEROctetString extends ASN1Object {
-  public hV: string = ''
+  public hV = ''
   constructor(public s: string) {
     super()
 
@@ -115,7 +113,7 @@ function getLenOfL(str: string, start: number) {
   // 长格式，取第一个字节后7位作为长度真正占用字节数，再加上本身
   const encoded = str.slice(start + 2, start + 6);
   const headHex = encoded.slice(0, 2);
-  const head = parseInt(headHex, 16);
+  const head = Number.parseInt(headHex, 16);
   const nHexLength = (head - 128) * 2;
 
   return nHexLength;

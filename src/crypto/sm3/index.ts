@@ -19,7 +19,8 @@ export function utf8ToArray(str: string) {
   const arr: number[] = []
 
   for (let i = 0, len = str.length; i < len; i++) {
-    const point = str.codePointAt(i)!
+    const point = str.codePointAt(i)
+    if (!point) throw new Error('invalid input')
 
     if (point <= 0x007f) {
       // 单字节，标量值：00000000 00000000 0zzzzzzz

@@ -1,10 +1,10 @@
 // Slower version of SM4, for audit purpose.
 // This version is 3-4x slower than the unwrapped version.
 
-import { bytesToHex } from '@/crypto/sm3/utils'
 import { rotl } from '@/crypto/sm2/sm3'
 import { arrayToUtf8, hexToArray } from '@/crypto/sm2/utils'
 import { utf8ToArray } from '@/crypto/sm3'
+import { bytesToHex } from '@/crypto/sm3/utils'
 
 /* eslint-disable no-bitwise, no-mixed-operators, complexity */
 const DECRYPT = 0
@@ -264,13 +264,11 @@ export function sm4(inArray: Uint8Array | string, key: Uint8Array | string, cryp
     if (cryptFlag !== DECRYPT) {
       // 加密，输出转 16 进制串
       return bytesToHex(outArray)
-    } else {
-      // 解密，输出转 utf8 串
-      return arrayToUtf8(outArray)
-    }
-  } else {
-    return outArray
-  }
+    } 
+    // 解密，输出转 utf8 串
+    return arrayToUtf8(outArray)
+  } 
+  return outArray
 }
 
 export function encrypt(inArray: Uint8Array | string, key: Uint8Array | string, options?: { output: 'array' } | SM4Options): Uint8Array

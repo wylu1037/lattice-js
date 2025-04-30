@@ -1,7 +1,7 @@
 import {
   Hash,
-  createView,
   Input,
+  createView,
   toBytes,
   wrapConstructor,
 } from "@/crypto/sm3/utils";
@@ -17,8 +17,7 @@ function setBigUint64(
   value: bigint,
   isLE: boolean
 ): void {
-  if (typeof view.setBigUint64 === "function")
-    return view.setBigUint64(byteOffset, value, isLE);
+  if (typeof view.setBigUint64 === "function") view.setBigUint64(byteOffset, value, isLE);
   const _32n = BigInt(32);
   const _u32_max = BigInt(0xffffffff);
   const wh = Number((value >> _32n) & _u32_max);
@@ -212,12 +211,12 @@ class SM3 extends SHA2<SM3> {
     }
     let { A, B, C, D, E, F, G, H } = this;
     for (let j = 0; j < 64; j++) {
-      let small = j >= 0 && j <= 15;
-      let T = small ? T1 : T2;
-      let SS1 = rotl(rotl(A, 12) + E + rotl(T, j), 7);
-      let SS2 = SS1 ^ rotl(A, 12);
-      let TT1 = ((small ? BoolB(A, B, C) : BoolA(A, B, C)) + D + SS2 + SM3_M[j]) | 0;
-      let TT2 = ((small ? BoolB(E, F, G) : BoolC(E, F, G)) + H + SS1 + SM3_W[j]) | 0;
+      const small = j >= 0 && j <= 15;
+      const T = small ? T1 : T2;
+      const SS1 = rotl(rotl(A, 12) + E + rotl(T, j), 7);
+      const SS2 = SS1 ^ rotl(A, 12);
+      const TT1 = ((small ? BoolB(A, B, C) : BoolA(A, B, C)) + D + SS2 + SM3_M[j]) | 0;
+      const TT2 = ((small ? BoolB(E, F, G) : BoolC(E, F, G)) + H + SS1 + SM3_W[j]) | 0;
       D = C;
       C = rotl(B, 9);
       B = A;

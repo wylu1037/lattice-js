@@ -1,12 +1,12 @@
-import {log} from "@/logger";
-import {CryptoService} from "./crypto";
-import {compressPublicKeyHex, generateKeyPairHex, doSignature, doVerifySignature} from "./sm2";
-import {KeyPair} from "./types";
-import sm3 from "@/crypto/sm3";
-import {Base58Impl, Base58Interface} from "@/utils/base58";
 import {ADDRESS_BYTES_LENGTH, ADDRESS_TITLE} from "@/common/constants";
 import { ADDRESS_VERSION } from "@/common/constants";
-import { EncodeFunc } from "./crypto";
+import sm3 from "@/crypto/sm3";
+import {log} from "@/logger";
+import {Base58Impl, type Base58Interface} from "@/utils/base58";
+import type {CryptoService} from "./crypto";
+import type { EncodeFunc } from "./crypto";
+import {compressPublicKeyHex, doSignature, doVerifySignature, generateKeyPairHex } from "./sm2";
+import type {KeyPair} from "./types";
 
 export class GM implements CryptoService {
   generateKeyPair(): KeyPair {
@@ -15,27 +15,33 @@ export class GM implements CryptoService {
   }
 
   compressPublicKey(publicKey: Buffer | string): Buffer {
+    let publicKeyBuffer: Buffer;
     if (typeof publicKey === "string") {
-      publicKey = Buffer.from(publicKey, "hex");
+      publicKeyBuffer = Buffer.from(publicKey, "hex");
+    } else {
+      publicKeyBuffer = publicKey;
     }
-    if (publicKey.length != 65) {
-      log.error("Invalid uncompressed public key length, expected size is 65, but actual size is %d", publicKey.length);
-      throw new Error(`Invalid uncompressed public key length, expected size is 65, but actual size is ${publicKey.length}`);
+    if (publicKeyBuffer.length !== 65) {
+      log.error("Invalid uncompressed public key length, expected size is 65, but actual size is %d", publicKeyBuffer.length);
+      throw new Error(`Invalid uncompressed public key length, expected size is 65, but actual size is ${publicKeyBuffer.length}`);
     }
     const compressedPublicKey = compressPublicKeyHex(publicKey.toString("hex"));
     return Buffer.from(compressedPublicKey, "hex");
   }
 
   publicKeyToAddress(publicKey: Buffer | string): string {
+    let publicKeyBuffer: Buffer;
     if (typeof publicKey === "string") {
-      publicKey = Buffer.from(publicKey, "hex");
+      publicKeyBuffer = Buffer.from(publicKey, "hex");
+    } else {
+      publicKeyBuffer = publicKey;
     }
 
-    if (publicKey.length > 64) {
-      publicKey = publicKey.subarray(publicKey.length-64);
+    if (publicKeyBuffer.length > 64) {
+      publicKeyBuffer = publicKeyBuffer.subarray(publicKeyBuffer.length-64);
     }
 
-    const bs = this.hash(publicKey);
+    const bs = this.hash(publicKeyBuffer);
     const base58: Base58Interface = new Base58Impl();
     const address = base58.checkEncode(bs.subarray(bs.length-ADDRESS_BYTES_LENGTH), ADDRESS_VERSION);
     return `${ADDRESS_TITLE}_${address}`;
@@ -47,12 +53,13 @@ export class GM implements CryptoService {
   }
 
   encodeHash(encodeFunc: EncodeFunc): Buffer {
-    return encodeFunc(Buffer.from("01", 'hex'));
+    const hash = encodeFunc();
+    return this.hash(hash);
   }
 
   sign(data: Buffer, privateKey: string): string {
     const buffer = Buffer.from(privateKey, "hex");
-    if (buffer.length != 32) {
+    if (buffer.length !== 32) {
       throw new Error(`Invalid private key length, expected size is 32, but actual size is ${buffer.length}`);
     }
     return doSignature(data, privateKey);
@@ -60,7 +67,7 @@ export class GM implements CryptoService {
 
   verify(data: Buffer, signature: string, uncompressedPublicKey: string): boolean {
     const buffer = Buffer.from(uncompressedPublicKey, "hex");
-    if (buffer.length != 65) {
+    if (buffer.length !== 65) {
       throw new Error(`Invalid uncompressed public key length, expected size is 65, but actual size is ${buffer.length}`);
     }
     return doVerifySignature(data, signature, uncompressedPublicKey);

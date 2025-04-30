@@ -1,12 +1,9 @@
-import {CryptoService, EncodeFunc} from "./crypto";
-import { KeyPair } from "./types";
-import { secp256k1 } from "ethereum-cryptography/secp256k1";
-import { randomBytes } from "@noble/hashes/utils";
 import { log } from "@/logger";
-import {Base58Impl, Base58Interface} from "@/utils/base58";
-import {ADDRESS_BYTES_LENGTH, ADDRESS_TITLE, ADDRESS_VERSION} from "@/common/constants";
-import sm3 from "@/crypto/sm3";
-import {doSignature, doVerifySignature} from "@/crypto/sm2";
+import { randomBytes } from "@noble/hashes/utils";
+import { secp256k1 } from "ethereum-cryptography/secp256k1";
+import type {CryptoService, EncodeFunc} from "./crypto";
+import type { KeyPair } from "./types";
+
 export class NIST implements CryptoService {
   generateKeyPair(): KeyPair {
     // Generate a random private key
@@ -35,7 +32,7 @@ export class NIST implements CryptoService {
     } else {
       publicKeyBuffer = publicKey;
     }
-    if (publicKeyBuffer.length != 65) {
+    if (publicKeyBuffer.length !== 65) {
       log.error("Invalid public key length, expected size is 65, but actual size is %d", publicKeyBuffer.length);
       throw new Error(
         `Invalid public key length, expected size is 65, but actual size is ${publicKeyBuffer.length}`

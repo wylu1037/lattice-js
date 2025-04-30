@@ -1,12 +1,12 @@
-/* eslint-disable no-use-before-define */
-import { encodeDer, decodeDer, encodeEnc, decodeEnc } from './asn1'
-import { arrayToHex, arrayToUtf8, generateKeyPairHex, hexToArray, leftPad, utf8ToHex } from './utils'
-import { sm3 } from './sm3'
-import * as utils from '@noble/curves/abstract/utils';
-import { field, sm2Curve } from './ec';
-import { ONE, ZERO } from './bn';
 import { bytesToHex } from '@/crypto/sm3/utils';
-import { ProjPointType } from '@noble/curves/abstract/weierstrass';
+import * as utils from '@noble/curves/abstract/utils';
+import type { ProjPointType } from '@noble/curves/abstract/weierstrass';
+/* eslint-disable no-use-before-define */
+import { decodeDer, decodeEnc, encodeDer, encodeEnc } from './asn1'
+import { ONE, ZERO } from './bn';
+import { field, sm2Curve } from './ec';
+import { sm3 } from './sm3'
+import { arrayToHex, arrayToUtf8, generateKeyPairHex, hexToArray, leftPad, utf8ToHex } from './utils'
 
 export * from './utils'
 export { initRNGPool } from './rng'
@@ -115,7 +115,7 @@ export function doDecrypt(encryptData: string, privateKey: string, cipherMode = 
     }
   } else {
     // c1c3c2
-    c1 = sm2Curve.ProjectivePoint.fromHex('04' + encryptData.substring(0, 128))!
+    c1 = sm2Curve.ProjectivePoint.fromHex(`04${encryptData.substring(0, 128)}`)
     c3 = encryptData.substring(128, 128 + 64)
     c2 = encryptData.substring(128 + 64)
   
@@ -137,9 +137,8 @@ export function doDecrypt(encryptData: string, privateKey: string, cipherMode = 
   
   if (checkC3 === c3.toLowerCase()) {
     return output === 'array' ? msg : arrayToUtf8(msg)
-  } else {
-    return output === 'array' ? [] : ''
   }
+  return output === 'array' ? [] : ''
 }
 
 export interface SignaturePoint {
@@ -174,9 +173,9 @@ export function doSignature(msg: Uint8Array | string, privateKey: string, option
   do {
     do {
       let point: SignaturePoint
-      if (pointPool && pointPool.length) {
-        point = pointPool.pop()!
-      } else {
+      if (pointPool?.length) {
+        point = pointPool.pop() as SignaturePoint
+      } else  {
         point = getPoint()
       }
       k = point.k
@@ -257,7 +256,7 @@ export function getZ(publicKey: string, userId = '1234567812345678') {
     py = publicKey.substring(64, 128)
   } else {
     // const point = G.curve.decodePointHex(publicKey)!
-    const point = sm2Curve.ProjectivePoint.fromHex(publicKey)!
+    const point = sm2Curve.ProjectivePoint.fromHex(publicKey)
     // px = leftPad(point.getX().toBigInteger().toRadix(16), 64)
     px = leftPad(utils.numberToHexUnpadded(point.x), 64)
     // py = leftPad(point.getY().toBigInteger().toRadix(16), 64)
@@ -309,10 +308,13 @@ export function getPoint() {
   const keypair = generateKeyPairHex()
   const PA = sm2Curve.ProjectivePoint.fromHex(keypair.publicKey)
   const k = utils.hexToNumber(keypair.privateKey)
+  if (!PA) {
+    throw new Error('Invalid public key')
+  }
 
   return {
     ...keypair,
     k,
-    x1: PA!.x,
+    x1: PA.x,
   }
 }

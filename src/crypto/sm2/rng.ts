@@ -5,7 +5,7 @@
 // Web: globalThis.crypto
 // Node: async import("crypto").webcrypto
 // Mini Program: wx.getRandomValues
-declare module wx {
+declare namespace wx {
   function getRandomValues(options: {
     length: number;
     success: (res: { randomValues: ArrayBuffer }) => void;
@@ -64,18 +64,16 @@ function consumePool(length: number): Uint8Array {
     prngPool = prngPool.slice(length)
     initRNGPool()
     return prng
-  } else {
-    throw new Error('random number pool is not ready or insufficient, prevent getting too long random values or too often.')
-  }
+  } 
+  throw new Error('random number pool is not ready or insufficient, prevent getting too long random values or too often.')
 }
 
 export function randomBytes(length = 0): Uint8Array {
   const array = new Uint8Array(length);
   if (_syncCrypto) {
     return _syncCrypto.getRandomValues(array);
-  } else {
-    // no sync crypto available, use async pool
-    const result = consumePool(length)
-    return result
-  }
+  } 
+  // no sync crypto available, use async pool
+  const result = consumePool(length)
+  return result
 }

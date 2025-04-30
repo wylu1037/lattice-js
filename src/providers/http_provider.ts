@@ -1,5 +1,5 @@
 import { log } from "@/logger";
-import { LatestBlock, Transaction } from "../common/types";
+import { Transaction, LatestBlock } from "@/common/types/index"
 import axios, { AxiosRequestHeaders, AxiosResponse } from "axios";
 
 // json-rpc id

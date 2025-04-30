@@ -1,7 +1,7 @@
-import { bytesToHex } from '@/crypto/sm3/utils'
 import { rotl } from '@/crypto/sm2/sm3'
 import { arrayToUtf8, hexToArray } from '@/crypto/sm2/utils'
 import { utf8ToArray } from '@/crypto/sm3'
+import { bytesToHex } from '@/crypto/sm3/utils'
 import { ghash } from '@noble/ciphers/_polyval'
 import { createView, setBigUint64 } from '@noble/ciphers/utils'
 
@@ -70,7 +70,14 @@ function l2(b: number) {
 const x = new Uint32Array(4)
 const tmp = new Uint32Array(4)
 function sms4Crypt(input: Uint8Array, output: Uint8Array, roundKey: Uint32Array) {
-  let x0 = 0, x1 = 0, x2 = 0, x3 = 0, tmp0 = 0, tmp1 = 0, tmp2 = 0, tmp3 = 0;
+  let x0 = 0;
+  let x1 = 0;
+  let x2 = 0;
+  let x3 = 0;
+  let tmp0 = 0;
+  let tmp1 = 0;
+  let tmp2 = 0;
+  let tmp3 = 0;
 
   // Unroll the first loop
   tmp0 = input[0] & 0xff;
@@ -142,7 +149,11 @@ function sms4Crypt(input: Uint8Array, output: Uint8Array, roundKey: Uint32Array)
  * 密钥扩展算法
  */
 function sms4KeyExt(key: Uint8Array, roundKey: Uint32Array, cryptFlag: 0 | 1) {
-  let x0 = 0, x1 = 0, x2 = 0, x3 = 0, mid = 0;
+  let x0 = 0;
+  let x1 = 0;
+  let x2 = 0;
+  let x3 = 0;
+  let mid = 0;
 
   // Unwrap the first loop and use local variables instead of the array x
   x0 = (key[0] & 0xff) << 24 | (key[1] & 0xff) << 16 | (key[2] & 0xff) << 8 | (key[3] & 0xff);
@@ -402,23 +413,21 @@ export function sm4(inArray: Uint8Array | string, key: Uint8Array | string, cryp
         return result
       }
       return result.output;
-    } else {
-      if (outputTag && cryptFlag !== DECRYPT) {
-        return { 
-          output: bytesToHex(result.output), 
-          tag: result.tag ? bytesToHex(result.tag) : undefined 
-        };
-      }
-      
-      if (cryptFlag !== DECRYPT) {
-        return {
-          output: bytesToHex(result.output),
-          tag: result.tag ? bytesToHex(result.tag) : undefined
-        };
-      } else {
-        return arrayToUtf8(result.output);
-      }
     }
+    if (outputTag && cryptFlag !== DECRYPT) {
+      return { 
+        output: bytesToHex(result.output), 
+        tag: result.tag ? bytesToHex(result.tag) : undefined 
+      };
+    }
+    
+    if (cryptFlag !== DECRYPT) {
+      return {
+        output: bytesToHex(result.output),
+        tag: result.tag ? bytesToHex(result.tag) : undefined
+      };
+    } 
+    return arrayToUtf8(result.output);
   }
 
   // Existing code for non-GCM modes
@@ -523,13 +532,11 @@ export function sm4(inArray: Uint8Array | string, key: Uint8Array | string, cryp
     if (cryptFlag !== DECRYPT) {
       // 加密，输出转 16 进制串
       return bytesToHex(outArray)
-    } else {
-      // 解密，输出转 utf8 串
-      return arrayToUtf8(outArray)
     }
-  } else {
-    return outArray
+    // 解密，输出转 utf8 串
+    return arrayToUtf8(outArray)
   }
+  return outArray
 }
 
 export interface GCMResult<T = Uint8Array | string> {

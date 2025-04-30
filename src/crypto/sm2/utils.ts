@@ -1,9 +1,8 @@
+import { mod } from '@noble/curves/abstract/modular';
 /* eslint-disable no-bitwise, no-mixed-operators, no-use-before-define, max-len */
 import * as utils from '@noble/curves/abstract/utils';
-
-import { sm2Curve } from './ec';
-import { mod } from '@noble/curves/abstract/modular';
 import { ONE, TWO, ZERO } from './bn';
+import { sm2Curve } from './ec';
 
 export interface KeyPair {
   privateKey: string
@@ -68,7 +67,7 @@ export function leftPad(input: string, num: number) {
 export function arrayToHex(arr: number[]) {
   return arr.map(item => {
     const hex = item.toString(16)
-    return hex.length === 1 ? '0' + hex : hex
+    return hex.length === 1 ? `0${hex}` : hex
   }).join('')
 }
 

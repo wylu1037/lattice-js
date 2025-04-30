@@ -1,8 +1,8 @@
-import { field, sm2Curve } from './ec';
-import { KeyPair, hexToArray, leftPad } from './utils';
 import * as utils from '@noble/curves/abstract/utils';
-import { sm3 } from './sm3';
 import { EmptyArray, getZ } from '.';
+import { field, sm2Curve } from './ec';
+import { sm3 } from './sm3';
+import { KeyPair, hexToArray, leftPad } from './utils';
 
 
 // 用到的常数
@@ -11,7 +11,7 @@ const wPow2Sub1 = utils.hexToNumber('7fffffffffffffffffffffffffffffff')
 
 // from sm2 sign part, extracted for code reusable.
 function hkdf(z: Uint8Array, keylen: number) {
-  let msg = new Uint8Array(keylen)
+  const msg = new Uint8Array(keylen)
   let ct = 1
   let offset = 0
   let t = EmptyArray
@@ -46,8 +46,8 @@ export function calculateSharedKey(
   ephemeralPublicKeyB: string,
   sharedKeyLength: number,
   isRecipient = false,
-  idA: string = '1234567812345678',
-  idB: string = '1234567812345678',
+  idA = '1234567812345678',
+  idB = '1234567812345678',
 ) {
   const RA = sm2Curve.ProjectivePoint.fromHex(ephemeralKeypairA.publicKey)
   const RB = sm2Curve.ProjectivePoint.fromHex(ephemeralPublicKeyB)

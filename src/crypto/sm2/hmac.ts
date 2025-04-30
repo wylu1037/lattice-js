@@ -1,4 +1,4 @@
-import { Hash, CHash, Input, toBytes } from '@/crypto/sm3/utils';
+import { type CHash, Hash, type Input, toBytes } from '@/crypto/sm3/utils';
 
 // HMAC (RFC 2104)
 export class HMAC<T extends Hash<T>> extends Hash<HMAC<T>> {

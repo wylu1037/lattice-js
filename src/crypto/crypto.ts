@@ -1,6 +1,28 @@
-import { KeyPair } from "./types";
+import { type Curve, CurveSchema } from "@/common/types/index";
+import { NIST } from "./crypto-secp256k1";
+import { GM } from "./crypto-sm2p256v1";
+import type { KeyPair } from "./types";
 
-export type EncodeFunc = (data: Buffer) => Buffer;
+const cryptoServiceMap = new Map<Curve, CryptoService>();
+
+export function newCrypto(curve: Curve): CryptoService {
+  if (cryptoServiceMap.has(curve)) {
+    return cryptoServiceMap.get(curve) as CryptoService;
+  }
+
+  switch (curve) {
+    case CurveSchema.Enum.Secp256k1:
+      cryptoServiceMap.set(curve, new NIST());
+      return cryptoServiceMap.get(curve) as CryptoService;
+    case CurveSchema.Enum.Sm2p256v1:
+      cryptoServiceMap.set(curve, new GM());
+      return cryptoServiceMap.get(curve) as CryptoService;
+    default:
+      throw new Error(`Unsupported curve: ${curve}`);
+  }
+}
+
+export type EncodeFunc = () => Buffer;
 
 export interface CryptoService {
   /**

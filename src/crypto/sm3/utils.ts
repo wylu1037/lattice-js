@@ -40,9 +40,9 @@ export function bytesToHex(bytes: Uint8Array): string {
  * @example hexToBytes('cafe0123') // Uint8Array.from([0xca, 0xfe, 0x01, 0x23])
  */
 export function hexToBytes(hex: string): Uint8Array {
-  if (typeof hex !== 'string') throw new Error('hex string expected, got ' + typeof hex);
+  if (typeof hex !== 'string') throw new Error(`hexToBytes expected string, got ${typeof hex}`);
   const len = hex.length;
-  if (len % 2) throw new Error('padded hex string expected, got unpadded hex of length ' + len);
+  if (len % 2) throw new Error(`padded hex string expected, got unpadded hex of length ${len}`);
   const array = new Uint8Array(len / 2);
   for (let i = 0; i < array.length; i++) {
     const j = i * 2;
