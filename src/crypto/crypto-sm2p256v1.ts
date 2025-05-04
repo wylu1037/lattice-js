@@ -1,4 +1,4 @@
-import {ADDRESS_BYTES_LENGTH, ADDRESS_TITLE, SM2P256V1_SIGNATURE_LENGTH, SM2P256V1_SIGNATURE_REMARK} from "@/common/constants";
+import {ADDRESS_BYTES_LENGTH, ADDRESS_TITLE, HEX_PREFIX, SM2P256V1_SIGNATURE_LENGTH, SM2P256V1_SIGNATURE_REMARK} from "@/common/constants";
 import { ADDRESS_VERSION } from "@/common/constants";
 import sm3 from "@/crypto/sm3";
 import {log} from "@/logger";
@@ -83,6 +83,13 @@ export class GM implements CryptoService {
     if (buffer.length !== 65) {
       throw new Error(`Invalid uncompressed public key length, expected size is 65, but actual size is ${buffer.length}`);
     }
-    return doVerifySignature(data, signature, uncompressedPublicKey);
+    let tempSignature = signature;
+    if (signature.startsWith(HEX_PREFIX)) {
+      tempSignature = signature.slice(HEX_PREFIX.length);
+    }
+    if (tempSignature.length > 128) {
+      tempSignature = tempSignature.slice(0, 128);
+    }
+    return doVerifySignature(data, tempSignature, uncompressedPublicKey);
   }
 }

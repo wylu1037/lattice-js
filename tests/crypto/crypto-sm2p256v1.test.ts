@@ -32,5 +32,16 @@ describe("crypto.sm2p256v1", () => {
       expect(result).toBe(true);
       // e86f2d5fae7dba2da2d663332dbaa18fb70b19610eda4abc3737df121cca92f475b0bed5a6ff93af1585ae598127e1a82c5fc3a5d69ecb636ed9191b3cdb06ca
     });
+
+    it("should sign and verify use given private key and uncompressed public key", () => {
+      const privateKey = "b2abf4282ac9be1b61afa64305e1b0eb4b7d0726384d1000486396ff73a66a5d";
+      const uncompressedPublicKey = "0422b34bd63db108efb3406fa21d9689b7812c8c8c488226618ae4a3150ce5890e019216c2dda7f2b2331d248bb09ac21d48acdf422e01d9fde8b4e99ee486f39c";
+      const crypto: CryptoService = new GM();
+      const data = Buffer.from("02a3f7c2e1b9d4f6a8e5c1b2d3f4e6a7c8b1d2e3f5a6c7b8d9e0f1a2b3c4d5e6", "hex");
+      const signature = crypto.sign(data, privateKey);
+      console.log("signature", signature);
+      const result = crypto.verify(data, signature, uncompressedPublicKey);
+      expect(result).toBe(true);
+    });
   });
 });
