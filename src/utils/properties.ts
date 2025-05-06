@@ -9,12 +9,19 @@ function checkType(value: any, type: string, name: string): void {
     for (let i = 0; i < types.length; i++) {
         switch (type) {
             case "any":
-                return;
+              return;
             case "bigint":
+              if (typeof value === "bigint") return;
+              break;
             case "boolean":
+              if (typeof value === "boolean") return;
+              break;
             case "number":
+              if (typeof value === "number") return;
+              break;
             case "string":
-                if (typeof(value) === type) { return; }
+              if (typeof value === "string") return;
+              break;
         }
     }
 
@@ -49,12 +56,18 @@ export function defineProperties<T>(
  values: { [ K in keyof T ]?: T[K] },
  types?: { [ K in keyof T ]?: string }): void {
 
-    for (let key in values) {
-        let value = values[key];
+    for (const key in values) {
+      const value = values[key];
 
-        const type = (types ? types[key]: null);
-        if (type) { checkType(value, type, key); }
+      const type = types ? types[key] : null;
+      if (type) {
+        checkType(value, type, key);
+      }
 
-        Object.defineProperty(target, key, { enumerable: true, value, writable: false });
+      Object.defineProperty(target, key, {
+        enumerable: true,
+        value,
+        writable: false
+      });
     }
 }

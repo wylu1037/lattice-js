@@ -51,7 +51,7 @@ class HttpProvider {
     } catch (error) {
       if (error instanceof Error) {
         throw error;
-      } 
+      }
       throw new Error("Unknown error");
     }
   }
@@ -63,19 +63,19 @@ class HttpProvider {
   ): Promise<AxiosResponse> {
     log.debug("发起HTTP请求，请求地址：%s，请求体：%o", this.baseUrl, jsonRpcBody);
     try {
-      const response = await axios.post(
-        this.baseUrl, 
-        jsonRpcBody, 
-        {
-          headers: headers || {},
-        }
+      const response = await axios.post(this.baseUrl, jsonRpcBody, {
+        headers: headers || {}
+      });
+      log.debug(
+        "HTTP请求成功，响应状态码：%d，响应体：%o",
+        response.status,
+        response.data
       );
-      log.debug("HTTP请求成功，响应状态码：%d，响应体：%o", response.status, response.data);
       return response;
     } catch (error) {
       if (error instanceof Error) {
         throw error;
-      } 
+      }
       log.error("HTTP请求失败，错误信息：%o", error);
       throw new Error("Unknown error");
     }
@@ -89,7 +89,7 @@ interface HttpClient {
 
   /**
    * Get the latest block info from chain
-   * 
+   *
    * @param chainId - The chain id
    * @param accountAddress - The account address
    * @returns The latest block info
@@ -98,7 +98,7 @@ interface HttpClient {
 
   /**
    * Send a transaction to chain
-   * 
+   *
    * @param chainId - The chain id
    * @param transaction - The transaction
    * @returns The transaction hash
@@ -107,16 +107,19 @@ interface HttpClient {
 
   /**
    * Batch sends transactions to chain
-   * 
+   *
    * @param chainId - The chain id
    * @param transactions - The transactions
    * @returns The transaction hashes
    */
-  batchSendTransactions(chainId: number, transactions: Transaction[]): Promise<string[]>;
+  batchSendTransactions(
+    chainId: number,
+    transactions: Transaction[]
+  ): Promise<string[]>;
 
   /**
    * Get the transaction receipt from chain
-   * 
+   *
    * @param chainId - The chain id
    * @param hash - The transaction hash
    * @returns The transaction receipt
@@ -125,7 +128,7 @@ interface HttpClient {
 
   /**
    * Get the latest dblock from chain
-   * 
+   *
    * @param chainId - The chain id
    * @returns The latest dblock
    */
@@ -144,7 +147,7 @@ class HttpClientImpl implements HttpClient {
   /**
    * Handle json-rpc response. when the response is null, throw error
    * when the response internal error is not null, throw error
-   * 
+   *
    * @param response - The json-rpc response
    * @returns The result
    */
@@ -159,17 +162,19 @@ class HttpClientImpl implements HttpClient {
     return response.result as T;
   }
 
-  
-  async getLatestBlock(chainId: number, accountAddress: string): Promise<LatestBlock> {
+  async getLatestBlock(
+    chainId: number,
+    accountAddress: string
+  ): Promise<LatestBlock> {
     const response: JsonRpcResponse<LatestBlock> = await this.httpProvider.post(
       {
         id: JSON_RPC_ID,
         jsonrpc: JSON_RPC_VERSION,
         method: "latc_getCurrentTBDB",
-        params: [accountAddress],
+        params: [accountAddress]
       },
       {
-        "ChainId": chainId.toString(),
+        ChainId: chainId.toString()
       }
     );
     return this.handleJsonRpcResponse<LatestBlock>(response);
@@ -181,32 +186,38 @@ class HttpClientImpl implements HttpClient {
    * @param transaction signed transaction
    * @return transaction hash
    */
-  async sendTransaction(chainId: number, transaction: Transaction): Promise<string> {
+  async sendTransaction(
+    chainId: number,
+    transaction: Transaction
+  ): Promise<string> {
     const response: JsonRpcResponse<string> = await this.httpProvider.post(
       {
         id: JSON_RPC_ID,
         jsonrpc: JSON_RPC_VERSION,
         method: "wallet_sendRawTBlock",
-        params: [transaction],
+        params: [transaction]
       },
       {
-        "ChainId": chainId.toString(),
+        ChainId: chainId.toString()
       }
     );
     return this.handleJsonRpcResponse<string>(response);
   }
 
   // batch send transactions to chain
-  async batchSendTransactions(chainId: number, transactions: Transaction[]): Promise<string[]> {
+  async batchSendTransactions(
+    chainId: number,
+    transactions: Transaction[]
+  ): Promise<string[]> {
     const response: JsonRpcResponse<string[]> = await this.httpProvider.post(
       {
         id: JSON_RPC_ID,
         jsonrpc: JSON_RPC_VERSION,
         method: "wallet_sendRawBatchTBlock",
-        params: [transactions],
+        params: [transactions]
       },
       {
-        "ChainId": chainId.toString(),
+        ChainId: chainId.toString()
       }
     );
     return this.handleJsonRpcResponse<string[]>(response);
@@ -218,10 +229,10 @@ class HttpClientImpl implements HttpClient {
         id: JSON_RPC_ID,
         jsonrpc: JSON_RPC_VERSION,
         method: "latc_getReceipt",
-        params: [hash],
+        params: [hash]
       },
       {
-        "ChainId": chainId.toString(),
+        ChainId: chainId.toString()
       }
     );
     return this.handleJsonRpcResponse<Receipt>(response);
@@ -233,10 +244,10 @@ class HttpClientImpl implements HttpClient {
         id: JSON_RPC_ID,
         jsonrpc: JSON_RPC_VERSION,
         method: "latc_getCurrentDBlock",
-        params: [],
+        params: []
       },
       {
-        "ChainId": chainId.toString(),
+        ChainId: chainId.toString()
       }
     );
     return this.handleJsonRpcResponse<DBlock>(response);
@@ -249,5 +260,5 @@ export {
   type JsonRpcError,
   HttpProvider,
   type HttpClient,
-  HttpClientImpl,
+  HttpClientImpl
 };

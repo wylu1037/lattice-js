@@ -1,23 +1,18 @@
 {
-  "mochaExplorer.files": "tests/**/*.test.ts",
-  "mochaExplorer.require": "ts-node/register",
-  "mochaExplorer.nodeArgv": ["--loader=ts-node/esm"],
-
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "biomejs.biome",
   "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "biomejs.biome"
   },
   "[css]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "biomejs.biome"
   },
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "biomejs.biome"
   },
-  "javascript.experimental.updateImportsOnPaste": true,
   "javascript.preferences.organizeImports": {
     "enabled": true
   },
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "biomejs.biome"
   }
 }

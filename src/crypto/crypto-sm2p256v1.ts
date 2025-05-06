@@ -10,8 +10,12 @@ import type {KeyPair} from "./types";
 
 export class GM implements CryptoService {
   generateKeyPair(): KeyPair {
-    const { privateKey, publicKey: uncompressedPublicKey } = generateKeyPairHex();
-    return { privateKey: Buffer.from(privateKey, "hex"), publicKey: Buffer.from(uncompressedPublicKey, "hex") };
+    const { privateKey, publicKey: uncompressedPublicKey } =
+      generateKeyPairHex();
+    return {
+      privateKey: Buffer.from(privateKey, "hex"),
+      publicKey: Buffer.from(uncompressedPublicKey, "hex")
+    };
   }
 
   compressPublicKey(publicKey: Buffer | string): Buffer {
@@ -22,8 +26,13 @@ export class GM implements CryptoService {
       publicKeyBuffer = publicKey;
     }
     if (publicKeyBuffer.length !== 65) {
-      log.error("Invalid uncompressed public key length, expected size is 65, but actual size is %d", publicKeyBuffer.length);
-      throw new Error(`Invalid uncompressed public key length, expected size is 65, but actual size is ${publicKeyBuffer.length}`);
+      log.error(
+        "Invalid uncompressed public key length, expected size is 65, but actual size is %d",
+        publicKeyBuffer.length
+      );
+      throw new Error(
+        `Invalid uncompressed public key length, expected size is 65, but actual size is ${publicKeyBuffer.length}`
+      );
     }
     const compressedPublicKey = compressPublicKeyHex(publicKey.toString("hex"));
     return Buffer.from(compressedPublicKey, "hex");
@@ -38,12 +47,15 @@ export class GM implements CryptoService {
     }
 
     if (publicKeyBuffer.length > 64) {
-      publicKeyBuffer = publicKeyBuffer.subarray(publicKeyBuffer.length-64);
+      publicKeyBuffer = publicKeyBuffer.subarray(publicKeyBuffer.length - 64);
     }
 
     const bs = this.hash(publicKeyBuffer);
     const base58: Base58Interface = new Base58Impl();
-    const address = base58.checkEncode(bs.subarray(bs.length-ADDRESS_BYTES_LENGTH), ADDRESS_VERSION);
+    const address = base58.checkEncode(
+      bs.subarray(bs.length - ADDRESS_BYTES_LENGTH),
+      ADDRESS_VERSION
+    );
     return `${ADDRESS_TITLE}_${address}`;
   }
 
@@ -60,10 +72,12 @@ export class GM implements CryptoService {
   sign(data: Buffer, privateKey: string): string {
     const buffer = Buffer.from(privateKey, "hex");
     if (buffer.length !== 32) {
-      throw new Error(`Invalid private key length, expected size is 32, but actual size is ${buffer.length}`);
+      throw new Error(
+        `Invalid private key length, expected size is 32, but actual size is ${buffer.length}`
+      );
     }
     const signature = doSignature(data, privateKey, {
-      hash: true,
+      hash: true
     });
     const signatureBuffer = Buffer.alloc(SM2P256V1_SIGNATURE_LENGTH);
     signatureBuffer.write(signature, 0, 64, "hex"); // r、s
@@ -75,15 +89,23 @@ export class GM implements CryptoService {
 
     signatureBuffer.write(hashHex, 65, 32, "hex");
     if (signatureBuffer.length !== SM2P256V1_SIGNATURE_LENGTH) {
-      throw new Error(`Invalid signature length, expected size is ${SM2P256V1_SIGNATURE_LENGTH}, but actual size is ${signatureBuffer.length}`);
+      throw new Error(
+        `Invalid signature length, expected size is ${SM2P256V1_SIGNATURE_LENGTH}, but actual size is ${signatureBuffer.length}`
+      );
     }
     return signatureBuffer.toString("hex");
   }
 
-  verify(data: Buffer, signature: string, uncompressedPublicKey: string): boolean {
+  verify(
+    data: Buffer,
+    signature: string,
+    uncompressedPublicKey: string
+  ): boolean {
     const buffer = Buffer.from(uncompressedPublicKey, "hex");
     if (buffer.length !== 65) {
-      throw new Error(`Invalid uncompressed public key length, expected size is 65, but actual size is ${buffer.length}`);
+      throw new Error(
+        `Invalid uncompressed public key length, expected size is 65, but actual size is ${buffer.length}`
+      );
     }
     let tempSignature = signature;
     if (signature.startsWith(HEX_PREFIX)) {
@@ -93,7 +115,7 @@ export class GM implements CryptoService {
       tempSignature = tempSignature.slice(0, 128);
     }
     return doVerifySignature(data, tempSignature, uncompressedPublicKey, {
-      hash: true,
+      hash: true
     });
   }
 }

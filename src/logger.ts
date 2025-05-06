@@ -2,15 +2,17 @@ import pino, { Logger, LoggerOptions } from 'pino';
 
 // Default options
 const defaultOptions: LoggerOptions = {
-  level: 'debug',
+  level: "debug",
   timestamp: pino.stdTimeFunctions.isoTime,
   formatters: {
-    level: (label) => ({ level: label }),
-  },
+    level: (label) => ({ level: label })
+  }
 };
 
 // Singleton logger instance
-let logger: Logger = pino(defaultOptions, pino.transport({
+let logger: Logger = pino(
+  defaultOptions,
+  pino.transport({
     target: "@jvddavid/pino-rotating-file",
     options: {
       path: "./logs",
@@ -19,19 +21,20 @@ let logger: Logger = pino(defaultOptions, pino.transport({
       sync: false,
       fsync: false,
       append: true,
-      mkdir: true,
-    },
-  }));
+      mkdir: true
+    }
+  })
+);
 
 // Initialize or reconfigure logger
 export function configureLogger(options?: LoggerOptions | pino.DestinationStream): Logger {
-  logger = pino({ ...defaultOptions, ...options });
-  return logger;
+logger = pino({ ...defaultOptions, ...options });
+return logger;
 }
 
 // Get current logger instance
 export function getLogger(): Logger {
-  return logger;
+return logger;
 }
 
 // Shortcut logging methods
@@ -41,10 +44,10 @@ export const log = {
   info: (msg: string, ...args: any[]) => logger.info(msg, ...args),
   warn: (msg: string, ...args: any[]) => logger.warn(msg, ...args),
   error: (msg: string, ...args: any[]) => logger.error(msg, ...args),
-  fatal: (msg: string, ...args: any[]) => logger.fatal(msg, ...args),
+  fatal: (msg: string, ...args: any[]) => logger.fatal(msg, ...args)
 };
 
 // Create child logger (supports context)
 export function createChildLogger(context: Record<string, any>): Logger {
-  return logger.child(context);
+return logger.child(context);
 }

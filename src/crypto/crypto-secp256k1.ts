@@ -21,7 +21,7 @@ export class NIST implements CryptoService {
 
     return {
       privateKey: Buffer.from(privateKey),
-      publicKey: Buffer.from(uncompressedPublicKey),
+      publicKey: Buffer.from(uncompressedPublicKey)
     };
   }
 
@@ -33,7 +33,10 @@ export class NIST implements CryptoService {
       publicKeyBuffer = publicKey;
     }
     if (publicKeyBuffer.length !== 65) {
-      log.error("Invalid public key length, expected size is 65, but actual size is %d", publicKeyBuffer.length);
+      log.error(
+        "Invalid public key length, expected size is 65, but actual size is %d",
+        publicKeyBuffer.length
+      );
       throw new Error(
         `Invalid public key length, expected size is 65, but actual size is ${publicKeyBuffer.length}`
       );
@@ -69,7 +72,11 @@ export class NIST implements CryptoService {
     return "";
   }
 
-  verify(data: Buffer, signature: string, uncompressedPublicKey: string): boolean {
-    return true
+  verify(
+    data: Buffer,
+    signature: string,
+    uncompressedPublicKey: string
+  ): boolean {
+    return true;
   }
 }

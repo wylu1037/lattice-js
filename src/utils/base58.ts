@@ -1,5 +1,5 @@
-import { sha256 } from '@ethersproject/sha2';
 import { Base58 } from '@ethersproject/basex';
+import { sha256 } from "@ethersproject/sha2";
 
 const ErrChecksum = new Error('checksum error');
 const ErrInvalidFormat = new Error('invalid format: version and/or checksum bytes missing');
@@ -27,9 +27,11 @@ class Base58Impl implements Base58Interface {
       throw ErrInvalidFormat;
     }
     const version = decoded[0];
-    let sum = new Uint8Array(4);
+    const sum = new Uint8Array(4);
     sum.set(decoded.subarray(decoded.length - 4));
-    const expectedSum = this.checksum(Buffer.from(decoded.subarray(0, decoded.length - 4)));
+    const expectedSum = this.checksum(
+      Buffer.from(decoded.subarray(0, decoded.length - 4))
+    );
     if (!expectedSum.equals(Buffer.from(sum))) {
       throw ErrChecksum;
     }
@@ -48,11 +50,11 @@ class Base58Impl implements Base58Interface {
   }
 
   checksum(input: Buffer): Buffer {
-    let hash = sha256(input);
-    let hash2 = sha256(hash);
-    let bytes = Buffer.from(hash2.slice(2), 'hex');
+    const hash = sha256(input);
+    const hash2 = sha256(hash);
+    const bytes = Buffer.from(hash2.slice(2), "hex");
     return bytes.subarray(0, 4);
   }
 }
 
-export { Base58Impl, Base58Interface, CheckDecodeResult };
+export { Base58Impl, type Base58Interface, type CheckDecodeResult };

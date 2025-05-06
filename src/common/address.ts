@@ -25,7 +25,10 @@ class Address {
     }
     if (this.address.startsWith(HEX_PREFIX)) {
       const base58: Base58Interface = new Base58Impl();
-      const converted = base58.checkEncode(Buffer.from(this.address.substring(2), 'hex'), ADDRESS_VERSION);
+      const converted = base58.checkEncode(
+        Buffer.from(this.address.substring(2), "hex"),
+        ADDRESS_VERSION
+      );
       return `${ADDRESS_TITLE}_${converted}`;
     }
     return this.address;
@@ -39,7 +42,7 @@ class Address {
     if (!this.address) {
       return ADDRESS_TITLE;
     }
-    const splitArr = this.address.split('_');
+    const splitArr = this.address.split("_");
     if (splitArr.length !== 2) {
       throw new Error(`invalid address ${this.address}`);
     }
@@ -51,7 +54,7 @@ class Address {
     if (version !== ADDRESS_VERSION) {
       throw new Error(`invalid address ${this.address}`);
     }
-    return `${HEX_PREFIX}${dec.toString('hex')}`;
+    return `${HEX_PREFIX}${dec.toString("hex")}`;
   }
 }
 

@@ -27,7 +27,25 @@ export class Transaction {
   code?: string;
   sign?: string;
 
-  constructor(number: number, type: TransactionType, parentHash: Hash, hub: Address[], daemonHash: Hash, codeHash: Hash, owner: Address, linker: Address, amount: UInt64, joule: UInt64, difficulty: UInt64, pow: UInt64, proofOfWork: string, payload: string, timestamp: UInt64, code: string, sign: string) {
+  constructor(
+    number: number,
+    type: TransactionType,
+    parentHash: Hash,
+    hub: Address[],
+    daemonHash: Hash,
+    codeHash: Hash,
+    owner: Address,
+    linker: Address,
+    amount: UInt64,
+    joule: UInt64,
+    difficulty: UInt64,
+    pow: UInt64,
+    proofOfWork: string,
+    payload: string,
+    timestamp: UInt64,
+    code: string,
+    sign: string
+  ) {
     this.number = number;
     this.type = type;
     this.parentHash = parentHash;
@@ -69,7 +87,7 @@ export class Transaction {
       "",
       Date.now(),
       "",
-      "",
+      ""
     );
   }
 
@@ -90,9 +108,13 @@ export class Transaction {
    * @param privateKey - The private key of the transaction
    * @returns The signed transaction
    */
-  public signTx(chainId: number, curve: Curve, privateKey: string): O.Option<Error> {
-      const hash = this.rlpEncodeHash(chainId, curve);
-      return this.signHash(hash, curve, privateKey);
+  public signTx(
+    chainId: number,
+    curve: Curve,
+    privateKey: string
+  ): O.Option<Error> {
+    const hash = this.rlpEncodeHash(chainId, curve);
+    return this.signHash(hash, curve, privateKey);
   }
 
   /**
@@ -102,61 +124,66 @@ export class Transaction {
    * @param privateKey - The private key of the transaction
    * @returns The signed transaction
    */
-  public signHash(hash: Buffer, curve: Curve, privateKey: string): O.Option<Error> {
-      const result = this.doSign(curve, hash, privateKey);
-      if (E.isRight(result)) {
-          return O.some(result.right);
-      }
-      this.sign = `0x${result.left.toString("hex")}`;
-      return O.none;
+  public signHash(
+    hash: Buffer,
+    curve: Curve,
+    privateKey: string
+  ): O.Option<Error> {
+    const result = this.doSign(curve, hash, privateKey);
+    if (E.isRight(result)) {
+      return O.some(result.right);
+    }
+    this.sign = `0x${result.left.toString("hex")}`;
+    return O.none;
   }
 
-  doSign(curve: Curve, hash: Buffer, privateKey: string): E.Either<Buffer, Error> {
-      try {
-          const cryptoService = newCrypto(curve);
-          let _privateKey = privateKey;
-          if (_privateKey.startsWith("0x")) {
-            _privateKey = _privateKey.slice(2);
-          }
-          const signature = cryptoService.sign(hash, _privateKey);
-          return E.left(Buffer.from(signature, "hex"));
-      } catch (error) {
-          return E.right(error as Error);
+  doSign(
+    curve: Curve,
+    hash: Buffer,
+    privateKey: string
+  ): E.Either<Buffer, Error> {
+    try {
+      const cryptoService = newCrypto(curve);
+      let _privateKey = privateKey;
+      if (_privateKey.startsWith("0x")) {
+        _privateKey = _privateKey.slice(2);
       }
+      const signature = cryptoService.sign(hash, _privateKey);
+      return E.left(Buffer.from(signature, "hex"));
+    } catch (error) {
+      return E.right(error as Error);
+    }
   }
 
   handleNumber(value: number | Uint8Array): Uint8Array {
     return stripZeros(arrayify(BigNumber.from(value)));
   }
-  
 
   public rlpEncodeHash(chainId: number, curve: Curve): Buffer {
     const cryptoService = newCrypto(curve);
     const encoded = cryptoService.encodeHash(() => {
-      const encoded = rlpEncode(
-         [
-            this.handleNumber(this.number ?? 0),
-            hexlify(this.getTypeCode()),
-            this.parentHash,
-            this.hub, 
-            this.daemonHash,
-            this.codeHash || ZERO_HASH,
-            new Addr(this.owner).toETH(),
-            new Addr(this.linker).toETH(),
-            this.handleNumber(this.amount ?? 0),
-            this.handleNumber(this.joule ?? 0), 
-            this.handleNumber(0), // difficulty
-            this.handleNumber(0), // proofOfWork
-            this.payload,
-            this.handleNumber(this.timestamp ?? 0),
-            arrayify(chainId), 
-            "0x",
-            "0x"
-          ]
-      );
+      const encoded = rlpEncode([
+        this.handleNumber(this.number ?? 0),
+        hexlify(this.getTypeCode()),
+        this.parentHash,
+        this.hub,
+        this.daemonHash,
+        this.codeHash || ZERO_HASH,
+        new Addr(this.owner).toETH(),
+        new Addr(this.linker).toETH(),
+        this.handleNumber(this.amount ?? 0),
+        this.handleNumber(this.joule ?? 0),
+        this.handleNumber(0), // difficulty
+        this.handleNumber(0), // proofOfWork
+        this.payload,
+        this.handleNumber(this.timestamp ?? 0),
+        arrayify(chainId),
+        "0x",
+        "0x"
+      ]);
       return Buffer.from(encoded.substring(2), "hex");
     });
-    
+
     return encoded;
   }
 }

@@ -1,12 +1,11 @@
-import { Curves } from "@/common/constants";
-import { TransactionTypes } from "@/common/constants";
+import { Curves, TransactionTypes } from "@/common/constants";
 import { TransactionBuilder } from "@/lattice/index";
 import {
   HttpClient,
   HttpClientImpl,
   HttpProvider,
 } from "@/providers/http_provider";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 describe("HttpProviders", () => {
   describe("Http Client", () => {

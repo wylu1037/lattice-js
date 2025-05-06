@@ -22,7 +22,7 @@ function stringify(value: any): any {
     if (value == null) { return "null"; }
 
     if (Array.isArray(value)) {
-        return "[ " + (value.map(stringify)).join(", ") + " ]";
+        return `[ ${value.map(stringify).join(", ")} ]`;
     }
 
     if (value instanceof Uint8Array) {
@@ -51,11 +51,11 @@ function stringify(value: any): any {
         case "object": {
             const keys = Object.keys(value);
             keys.sort();
-            return "{ " + keys.map((k) => `${ stringify(k) }: ${ stringify(value[k]) }`).join(", ") + " }";
+            return `{ ${keys.map((k) => `${stringify(k)}: ${stringify(value[k])}`).join(", ")} }`;
         }
     }
 
-    return `[ COULD NOT SERIALIZE ]`;
+    return "[ COULD NOT SERIALIZE ]";
 }
 
 /**
@@ -647,7 +647,7 @@ export function isCallException(error: any): error is CallExceptionError {
  *  ethers version, %%code%% and all additional properties, serialized.
  */
 export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(message: string, code: K, info?: ErrorInfo<T>): T {
-    let shortMessage = message;
+    const shortMessage = message;
 
     {
         const details: Array<string> = [];
@@ -659,7 +659,7 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
                 if (key === "shortMessage") { continue; }
                 const value = <any>(info[<keyof ErrorInfo<T>>key]);
 //                try {
-                    details.push(key + "=" + stringify(value));
+                details.push(`${key}=${stringify(value)}`);
 //                } catch (error: any) {
 //                console.log("MMM", error.message);
 //                    details.push(key + "=[could not serialize object]");
@@ -670,11 +670,11 @@ export function makeError<K extends ErrorCode, T extends CodedEthersError<K>>(me
         details.push(`version=${ version }`);
 
         if (details.length) {
-            message += " (" + details.join(", ") + ")";
+            message += ` (${details.join(", ")})`;
         }
     }
 
-    let error;
+    let error: Error;
     switch (code) {
         case "INVALID_ARGUMENT":
             error = new TypeError(message);
@@ -722,17 +722,29 @@ export function assertArgument(check: unknown, message: string, name: string, va
 
 export function assertArgumentCount(count: number, expectedCount: number, message?: string): void {
     if (message == null) { message = ""; }
-    if (message) { message = ": " + message; }
+    if (message) {
+      message = `: ${message}`;
+    }
 
-    assert(count >= expectedCount, "missing argument" + message, "MISSING_ARGUMENT", {
+    assert(
+      count >= expectedCount,
+      `missing argument${message}`,
+      "MISSING_ARGUMENT",
+      {
         count: count,
         expectedCount: expectedCount
-    });
+      }
+    );
 
-    assert(count <= expectedCount, "too many arguments" + message, "UNEXPECTED_ARGUMENT", {
+    assert(
+      count <= expectedCount,
+      `too many arguments${message}`,
+      "UNEXPECTED_ARGUMENT",
+      {
         count: count,
         expectedCount: expectedCount
-    });
+      }
+    );
 }
 
 const _normalizeForms = ["NFD", "NFC", "NFKD", "NFKC"].reduce((accum, form) => {
