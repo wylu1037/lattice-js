@@ -10,10 +10,12 @@ export const HEX_PREFIX: string = '0x';
 export const SM2P256V1_SIGNATURE_REMARK: string = '01';
 // The length of the sm2p256v1 signature
 export const SM2P256V1_SIGNATURE_LENGTH: number = 97;
-
+// The zero hash
 export const ZERO_HASH: string = '0x0000000000000000000000000000000000000000000000000000000000000000';
+// The zero address
 export const ZERO_ADDRESS: string = 'zltc_QLbz7JHiBTspS962RLKV8GndWFwjA5K66';
 
+// The types of the transaction
 export const TransactionTypes = {
     Genesis: 'genesis', // 创世纪交易
     Create: 'create', // 创建交易
@@ -23,7 +25,6 @@ export const TransactionTypes = {
     CallContract: 'execute', // 调用合约交易
     UpgradeContract: 'update', // 升级合约交易
 } as const;
-
 export type TransactionType = typeof TransactionTypes[keyof typeof TransactionTypes];
 
 export const TransactionTypeCodeRecord: Record<TransactionType, number> = {
@@ -36,9 +37,9 @@ export const TransactionTypeCodeRecord: Record<TransactionType, number> = {
     [TransactionTypes.UpgradeContract]: 6,
 } as const;
 
+// The curve of the key pair
 export const Curves = {
     Secp256k1: 'Secp256k1',
     Sm2p256v1: 'Sm2p256v1',
 } as const;
-
 export type Curve = typeof Curves[keyof typeof Curves];

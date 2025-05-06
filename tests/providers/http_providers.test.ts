@@ -1,5 +1,6 @@
 import { Curves } from "@/common/constants";
-import { Transaction } from "@/common/types";
+import { TransactionTypes } from "@/common/constants";
+import { TransactionBuilder } from "@/lattice/index";
 import {
   HttpClient,
   HttpClientImpl,
@@ -64,15 +65,12 @@ describe("HttpProviders", () => {
       const client: HttpClient = new HttpClientImpl(provider);
       const block = await client.getLatestBlock(chainId, account);
       
-      const tx = Transaction.default();
-      tx.number = block.currentTBlockNumber+1;
-      tx.parentHash = block.currentTBlockHash;
-      tx.daemonHash = block.currentDBlockHash;
-      tx.owner = account;
-      tx.linker = linker;
-      tx.amount = 0;
-      tx.payload = "0x0102030405";
-
+      const tx = TransactionBuilder.builder(TransactionTypes.Send)
+        .setBlock(block)
+        .setOwner(account)
+        .setLinker(linker)
+        .setPayload("0x0102030405")
+        .build();
       tx.signTx(chainId, curve, privateKey);
       
       console.log(JSON.stringify(tx, (_, value) => 
