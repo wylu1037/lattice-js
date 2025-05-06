@@ -1,4 +1,4 @@
-import { LatestBlock, Transaction } from "@/common/types/index"
+import { DBlock, LatestBlock, Receipt, Transaction } from "@/common/types/index"
 import { log } from "@/logger";
 import axios, { AxiosRequestHeaders, AxiosResponse } from "axios";
 
@@ -113,6 +113,23 @@ interface HttpClient {
    * @returns The transaction hashes
    */
   batchSendTransactions(chainId: number, transactions: Transaction[]): Promise<string[]>;
+
+  /**
+   * Get the transaction receipt from chain
+   * 
+   * @param chainId - The chain id
+   * @param hash - The transaction hash
+   * @returns The transaction receipt
+   */
+  getReceipt(chainId: number, hash: string): Promise<Receipt>;
+
+  /**
+   * Get the latest dblock from chain
+   * 
+   * @param chainId - The chain id
+   * @returns The latest dblock
+   */
+  getLatestDBlock(chainId: number): Promise<DBlock>;
 }
 
 // http client implementation
@@ -124,8 +141,13 @@ class HttpClientImpl implements HttpClient {
     this.httpProvider = provider;
   }
 
-  // handel json-rpc response. when the response is null, throw error
-  // when the response internal error is not null, throw error
+  /**
+   * Handle json-rpc response. when the response is null, throw error
+   * when the response internal error is not null, throw error
+   * 
+   * @param response - The json-rpc response
+   * @returns The result
+   */
   private handleJsonRpcResponse<T>(response: JsonRpcResponse<T>): T {
     if (!response) {
       throw new Error("response is null");
@@ -133,6 +155,7 @@ class HttpClientImpl implements HttpClient {
     if (response.error) {
       throw new Error(`${response.error.code}: ${response.error.message}`);
     }
+    //return JSON.parse(JSON.stringify(response.result)) as T;
     return response.result as T;
   }
 
@@ -187,6 +210,36 @@ class HttpClientImpl implements HttpClient {
       }
     );
     return this.handleJsonRpcResponse<string[]>(response);
+  }
+
+  async getReceipt(chainId: number, hash: string): Promise<Receipt> {
+    const response: JsonRpcResponse<Receipt> = await this.httpProvider.post(
+      {
+        id: JSON_RPC_ID,
+        jsonrpc: JSON_RPC_VERSION,
+        method: "latc_getReceipt",
+        params: [hash],
+      },
+      {
+        "ChainId": chainId.toString(),
+      }
+    );
+    return this.handleJsonRpcResponse<Receipt>(response);
+  }
+
+  async getLatestDBlock(chainId: number): Promise<DBlock> {
+    const response: JsonRpcResponse<DBlock> = await this.httpProvider.post(
+      {
+        id: JSON_RPC_ID,
+        jsonrpc: JSON_RPC_VERSION,
+        method: "latc_getCurrentDBlock",
+        params: [],
+      },
+      {
+        "ChainId": chainId.toString(),
+      }
+    );
+    return this.handleJsonRpcResponse<DBlock>(response);
   }
 }
 

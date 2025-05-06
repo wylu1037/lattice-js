@@ -149,7 +149,7 @@ export class Transaction {
             this.handleNumber(0), // proofOfWork
             this.payload,
             this.handleNumber(this.timestamp ?? 0),
-            this.handleNumber(chainId), 
+            arrayify(chainId), 
             "0x",
             "0x"
           ]
