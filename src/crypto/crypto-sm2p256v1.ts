@@ -62,7 +62,9 @@ export class GM implements CryptoService {
     if (buffer.length !== 32) {
       throw new Error(`Invalid private key length, expected size is 32, but actual size is ${buffer.length}`);
     }
-    const signature = doSignature(data, privateKey);
+    const signature = doSignature(data, privateKey, {
+      hash: true,
+    });
     const signatureBuffer = Buffer.alloc(SM2P256V1_SIGNATURE_LENGTH);
     signatureBuffer.write(signature, 0, 64, "hex"); // r、s
     signatureBuffer.write(SM2P256V1_SIGNATURE_REMARK, 64, 1, "hex"); // remark
@@ -90,6 +92,8 @@ export class GM implements CryptoService {
     if (tempSignature.length > 128) {
       tempSignature = tempSignature.slice(0, 128);
     }
-    return doVerifySignature(data, tempSignature, uncompressedPublicKey);
+    return doVerifySignature(data, tempSignature, uncompressedPublicKey, {
+      hash: true,
+    });
   }
 }
