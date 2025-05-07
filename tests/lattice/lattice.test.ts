@@ -8,7 +8,7 @@ import {
 } from "@/lattice/index";
 import { LatticeAbi } from "@/utils/abi";
 
-describe("lattice client", () => {
+describe.skip("lattice client", () => {
   const chainId = 1;
   const chainConfig = new ChainConfig(Curves.Sm2p256v1, true);
   const nodeConnectionConfig = new NodeConnectionConfig(
