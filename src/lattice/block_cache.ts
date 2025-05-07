@@ -1,6 +1,6 @@
 import { DBlock } from "@/common/types";
 import { E } from "@/common/types/index";
-import { CacheConfig, CacheService } from "@/lattice/index";
+import { CacheConfig, CacheService } from "@/utils/index";
 
 interface BlockCache {
   putBlock(chainId: number, address: string, block: DBlock): Promise<void>;
