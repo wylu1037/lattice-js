@@ -1,11 +1,10 @@
 <h1 align="center">LatticeJS</h1>
 
-[![cov](https://wylu1037.github.io/lattice-js/badges/coverage.svg)](https://github.com/wylu1037/lattice-js/actions)
-
 <div style="display:flex; justify-content:center; align-items: center; gap: 5px">
     <img alt="Static Badge" src="https://img.shields.io/badge/TypeScript-blue">
     <img alt="Static Badge" src="https://img.shields.io/badge/npm-v10.2.3-orange">
     <img alt="Static Badge" src="https://img.shields.io/badge/Node.js-v18.19.0-green">
+    <img alt="Static Badge" src="https://wylu1037.github.io/lattice-js/badges/coverage.svg">
 </div>
 
 <div style="display:flex; justify-content:center; align-items: center; margin-top: 8px">
