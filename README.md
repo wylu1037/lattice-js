@@ -1,4 +1,5 @@
 <h1 align="center">LatticeJS</h1>
+[![cov](https://wylu1037.github.io/lattice-js/badges/coverage.svg)](https://github.com/wylu1037/lattice-js/actions)
 
 <div style="display:flex; justify-content:center; align-items: center; gap: 5px">
     <img alt="Static Badge" src="https://img.shields.io/badge/TypeScript-blue">
