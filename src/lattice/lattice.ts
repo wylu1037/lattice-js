@@ -4,7 +4,7 @@ import {
   TransactionTypes,
   ZERO_ADDRESS
 } from "@/common/constants";
-import { E, O, Receipt } from "@/common/types/index";
+import { E, LatestBlock, O, Receipt, Transaction } from "@/common/types/index";
 import { newCrypto } from "@/crypto/index";
 import {
   HttpClient,
@@ -17,6 +17,12 @@ import {
   type RetryStrategy
 } from "@/utils/index";
 import { TransactionBuilder } from "./tx";
+import {
+  AccountLock,
+  BlockCache,
+  newAccountLock,
+  BlockCacheImpl
+} from "@/lattice/index";
 
 class Credentials {
   private readonly accountAddress: string;
@@ -116,11 +122,15 @@ class LatticeClient {
   private readonly chainConfig: ChainConfig;
   private readonly nodeConnectionConfig: NodeConnectionConfig;
   private readonly options: Options;
+  private readonly accountLock: AccountLock;
+  private readonly blockCache: BlockCache;
 
   constructor(
     chainConfig: ChainConfig,
     nodeConnectionConfig: NodeConnectionConfig,
-    options?: Options
+    options?: Options,
+    accountLock?: AccountLock,
+    blockCache?: BlockCache
   ) {
     this.httpClient = new HttpClientImpl(
       new HttpProvider(
@@ -130,6 +140,15 @@ class LatticeClient {
     this.chainConfig = chainConfig;
     this.nodeConnectionConfig = nodeConnectionConfig;
     this.options = options ?? new Options({});
+    this.accountLock = accountLock ?? newAccountLock();
+    this.blockCache =
+      blockCache ??
+      new BlockCacheImpl(
+        {
+          backend: "memory"
+        },
+        10
+      );
   }
 
   /**
@@ -153,6 +172,30 @@ class LatticeClient {
     return E.left(receipt);
   }
 
+  private async handleTransaction(
+    chainId: number,
+    credentials: Credentials,
+    transaction: Transaction,
+    block: LatestBlock
+  ) {
+    const option = transaction.signTx(
+      chainId,
+      this.chainConfig.curve,
+      credentials.getPrivateKey()
+    );
+    if (O.isSome(option)) {
+      return E.right(option.value);
+    }
+
+    const hash = await this.httpClient.sendTransaction(chainId, transaction);
+
+    block.currentTBlockNumber = block.currentTBlockNumber + 1;
+    block.currentTBlockHash = hash;
+    this.blockCache.putBlock(chainId, credentials.getAccountAddress(), block);
+
+    return E.left(hash);
+  }
+
   /**
    * Transfer
    * @param credentials Your credentials
@@ -171,29 +214,35 @@ class LatticeClient {
     amount = 0,
     joule = 0
   ): Promise<E.Either<string, Error>> {
-    const block = await this.httpClient.getLatestBlock(
+    const result = await this.accountLock.withLock(
       chainId,
-      credentials.getAccountAddress()
-    );
-    const tx = TransactionBuilder.builder(TransactionTypes.Send)
-      .setBlock(block)
-      .setOwner(credentials.getAccountAddress())
-      .setLinker(linker)
-      .setPayload(payload)
-      .setAmount(amount)
-      .setJoule(joule)
-      .build();
-    const option = tx.signTx(
-      chainId,
-      this.chainConfig.curve,
-      credentials.getPrivateKey()
-    );
-    if (O.isSome(option)) {
-      return E.right(option.value);
-    }
+      credentials.getAccountAddress(),
+      async () => {
+        const cachedResult = await this.blockCache.getBlock(
+          chainId,
+          credentials.getAccountAddress(),
+          async (chainId, address) => {
+            return await this.httpClient.getLatestBlock(chainId, address);
+          }
+        );
+        if (E.isRight(cachedResult)) {
+          return E.right(cachedResult.right);
+        }
 
-    const hash = await this.httpClient.sendTransaction(chainId, tx);
-    return E.left(hash);
+        const block = cachedResult.left;
+        const tx = TransactionBuilder.builder(TransactionTypes.Send)
+          .setBlock(block)
+          .setOwner(credentials.getAccountAddress())
+          .setLinker(linker)
+          .setPayload(payload)
+          .setAmount(amount)
+          .setJoule(joule)
+          .build();
+        return await this.handleTransaction(chainId, credentials, tx, block);
+      }
+    );
+
+    return result;
   }
 
   /**
@@ -251,36 +300,40 @@ class LatticeClient {
     amount = 0,
     joule = 0
   ): Promise<E.Either<string, Error>> {
-    const block = await this.httpClient.getLatestBlock(
+    const result = await this.accountLock.withLock(
       chainId,
-      credentials.getAccountAddress()
-    );
-    const tx = TransactionBuilder.builder(TransactionTypes.DeployContract)
-      .setBlock(block)
-      .setOwner(credentials.getAccountAddress())
-      .setLinker(ZERO_ADDRESS)
-      .setCode(code)
-      .setPayload(payload)
-      .setAmount(amount)
-      .setJoule(joule)
-      .build();
+      credentials.getAccountAddress(),
+      async () => {
+        const cachedResult = await this.blockCache.getBlock(
+          chainId,
+          credentials.getAccountAddress(),
+          async (chainId, address) => {
+            return await this.httpClient.getLatestBlock(chainId, address);
+          }
+        );
+        if (E.isRight(cachedResult)) {
+          return E.right(cachedResult.right);
+        }
 
-    const codeHash = newCrypto(this.chainConfig.curve).hash(
-      Buffer.from(code.startsWith(HEX_PREFIX) ? code.slice(2) : code, "hex")
-    );
-    tx.codeHash = `0x${codeHash.toString("hex")}`;
-    const option = tx.signTx(
-      chainId,
-      this.chainConfig.curve,
-      credentials.getPrivateKey()
-    );
+        const block = cachedResult.left;
+        const tx = TransactionBuilder.builder(TransactionTypes.DeployContract)
+          .setBlock(block)
+          .setOwner(credentials.getAccountAddress())
+          .setLinker(ZERO_ADDRESS)
+          .setCode(code)
+          .setPayload(payload)
+          .setAmount(amount)
+          .setJoule(joule)
+          .build();
 
-    if (O.isSome(option)) {
-      return E.right(option.value);
-    }
-
-    const hash = await this.httpClient.sendTransaction(chainId, tx);
-    return E.left(hash);
+        const codeHash = newCrypto(this.chainConfig.curve).hash(
+          Buffer.from(code.startsWith(HEX_PREFIX) ? code.slice(2) : code, "hex")
+        );
+        tx.codeHash = `0x${codeHash.toString("hex")}`;
+        return await this.handleTransaction(chainId, credentials, tx, block);
+      }
+    );
+    return result;
   }
 
   /**
@@ -340,34 +393,39 @@ class LatticeClient {
     amount = 0,
     joule = 0
   ): Promise<E.Either<string, Error>> {
-    const block = await this.httpClient.getLatestBlock(
+    const result = await this.accountLock.withLock(
       chainId,
-      credentials.getAccountAddress()
-    );
-    const tx = TransactionBuilder.builder(TransactionTypes.DeployContract)
-      .setBlock(block)
-      .setOwner(credentials.getAccountAddress())
-      .setLinker(contractAddress)
-      .setCode(code)
-      .setPayload(payload)
-      .setAmount(amount)
-      .setJoule(joule)
-      .build();
-    const codeHash = newCrypto(this.chainConfig.curve).hash(
-      Buffer.from(code.startsWith(HEX_PREFIX) ? code.slice(2) : code, "hex")
-    );
-    tx.codeHash = `0x${codeHash.toString("hex")}`;
-    const option = tx.signTx(
-      chainId,
-      this.chainConfig.curve,
-      credentials.getPrivateKey()
-    );
-    if (O.isSome(option)) {
-      return E.right(option.value);
-    }
+      credentials.getAccountAddress(),
+      async () => {
+        const cachedResult = await this.blockCache.getBlock(
+          chainId,
+          credentials.getAccountAddress(),
+          async (chainId, address) => {
+            return await this.httpClient.getLatestBlock(chainId, address);
+          }
+        );
+        if (E.isRight(cachedResult)) {
+          return E.right(cachedResult.right);
+        }
 
-    const hash = await this.httpClient.sendTransaction(chainId, tx);
-    return E.left(hash);
+        const block = cachedResult.left;
+        const tx = TransactionBuilder.builder(TransactionTypes.DeployContract)
+          .setBlock(block)
+          .setOwner(credentials.getAccountAddress())
+          .setLinker(contractAddress)
+          .setCode(code)
+          .setPayload(payload)
+          .setAmount(amount)
+          .setJoule(joule)
+          .build();
+        const codeHash = newCrypto(this.chainConfig.curve).hash(
+          Buffer.from(code.startsWith(HEX_PREFIX) ? code.slice(2) : code, "hex")
+        );
+        tx.codeHash = `0x${codeHash.toString("hex")}`;
+        return await this.handleTransaction(chainId, credentials, tx, block);
+      }
+    );
+    return result;
   }
 
   /**

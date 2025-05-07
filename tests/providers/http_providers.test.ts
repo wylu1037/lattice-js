@@ -32,7 +32,7 @@ describe.skip("HttpProviders", () => {
     it("should be able to get receipt", async () => {
       try {
         const hash =
-          "0x8940fae1bee579416556f7e2a12c079cf795d51129b9acf64d0bfe963cdf04a1";
+          "0x2c5e3c1c39b5a35e4b1b531d07102eccfa8f237bf8cc237f3ea8e2cac0cf91d1";
         const receipt = await client.getReceipt(chainId, hash);
         console.log(receipt);
         expect(receipt).not.toBeNull();
@@ -46,6 +46,16 @@ describe.skip("HttpProviders", () => {
         const dblock = await client.getLatestDBlock(chainId);
         console.log(dblock);
         expect(dblock).not.toBeNull();
+      } catch (error) {
+        expect(error).toBeNull();
+      }
+    });
+
+    it("should be able to get tdblock", async () => {
+      try {
+        const tdblock = await client.getLatestBlock(chainId, account);
+        console.log(tdblock);
+        expect(tdblock).not.toBeNull();
       } catch (error) {
         expect(error).toBeNull();
       }

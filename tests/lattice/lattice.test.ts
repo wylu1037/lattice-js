@@ -40,6 +40,38 @@ describe.skip("lattice client", () => {
     }
   });
 
+  it(
+    "should handle concurrent transfers correctly",
+    { timeout: 60_000 },
+    async () => {
+      const transferTask = async (index: number) => {
+        const result = await lattice.transfer(
+          credentials,
+          chainId,
+          "zltc_bXmfbHYXx5e2ri9nSrDcjGLzZ4A3EmbXK",
+          "0x0102"
+        );
+
+        if (E.isLeft(result)) {
+          console.log("transfer success, hash:", result.left);
+          return { success: true, hash: result.left };
+        }
+
+        return { success: false, error: result.right };
+      };
+
+      const total = 385;
+      const tasks = Array(total)
+        .fill(0)
+        .map((_, index) => transferTask(index));
+
+      const results = await Promise.all(tasks);
+      const successCount = results.filter((r) => r.success).length;
+
+      expect(successCount).toBe(total);
+    }
+  );
+
   it("should be able to transfer and wait receipt", async () => {
     const result = await lattice.transferWaitReceipt(
       credentials,
