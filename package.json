@@ -30,6 +30,7 @@
     "axios": "^1.8.4",
     "ethereum-cryptography": "^3.0.0",
     "fp-ts": "^2.16.10",
+    "noble": "^1.9.1",
     "pino": "^9.6.0",
     "zod": "^3.24.3"
   },
