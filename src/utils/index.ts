@@ -10,4 +10,4 @@ export {
   RandomDelayStrategy,
   ExponentialBackoffStrategy,
   type RetryStrategy
-} from "./retry-handler";
+} from "./retry_handler.js";
