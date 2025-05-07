@@ -9,7 +9,7 @@ import { isHexString } from "@ethersproject/bytes";
 class LatticeAbi {
   private iface: Interface;
 
-  constructor(abiJson: string) {
+  constructor(abiJson: string | string[]) {
     this.iface = new Interface(abiJson);
   }
 
@@ -33,9 +33,9 @@ class LatticeAbi {
     return event;
   }
 
-  encodeFunctionData(name: string, args: any[]) {
+  encodeFunctionData(name: string, args?: any[]) {
     const func = this.getFunction(name);
-    const convertedArgs = convertArguments(func.inputs, args);
+    const convertedArgs = convertArguments(func.inputs, args ?? []);
     return this.iface.encodeFunctionData(func, convertedArgs);
   }
 
@@ -44,9 +44,9 @@ class LatticeAbi {
     return this.iface.decodeFunctionData(func, data);
   }
 
-  encodeEventLog(name: string, args: any[]) {
+  encodeEventLog(name: string, args?: any[]) {
     const event = this.getEvent(name);
-    const convertedArgs = convertArguments(event.inputs, args);
+    const convertedArgs = convertArguments(event.inputs, args ?? []);
     return this.iface.encodeEventLog(event, convertedArgs);
   }
 
