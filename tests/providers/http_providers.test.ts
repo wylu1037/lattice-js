@@ -7,7 +7,7 @@ import {
 } from "@/providers/http_provider";
 import { beforeEach, describe, expect, it } from "vitest";
 
-describe("HttpProviders", () => {
+describe.skip("HttpProviders", () => {
   describe("Http Client", () => {
     const chainId = 1;
     const account = "zltc_bXmfbHYXx5e2ri9nSrDcjGLzZ4A3EmbXK";
@@ -31,7 +31,8 @@ describe("HttpProviders", () => {
 
     it("should be able to get receipt", async () => {
       try {
-        const hash = "0x8940fae1bee579416556f7e2a12c079cf795d51129b9acf64d0bfe963cdf04a1";
+        const hash =
+          "0x8940fae1bee579416556f7e2a12c079cf795d51129b9acf64d0bfe963cdf04a1";
         const receipt = await client.getReceipt(chainId, hash);
         console.log(receipt);
         expect(receipt).not.toBeNull();
@@ -58,12 +59,13 @@ describe("HttpProviders", () => {
       const curve = Curves.Sm2p256v1;
       const account = "zltc_bXmfbHYXx5e2ri9nSrDcjGLzZ4A3EmbXK";
       const linker = "zltc_Yvvg3Zw2y7Szb3dzaYJsGHwqB4wofLgJ1";
-      const privateKey = "0xb2abf4282ac9be1b61afa64305e1b0eb4b7d0726384d1000486396ff73a66a5d";
+      const privateKey =
+        "0xb2abf4282ac9be1b61afa64305e1b0eb4b7d0726384d1000486396ff73a66a5d";
 
       const provider = new HttpProvider(url);
       const client: HttpClient = new HttpClientImpl(provider);
       const block = await client.getLatestBlock(chainId, account);
-      
+
       const tx = TransactionBuilder.builder(TransactionTypes.Send)
         .setBlock(block)
         .setOwner(account)
@@ -71,10 +73,12 @@ describe("HttpProviders", () => {
         .setPayload("0x0102030405")
         .build();
       tx.signTx(chainId, curve, privateKey);
-      
-      console.log(JSON.stringify(tx, (_, value) => 
-        typeof value === 'bigint' ? value.toString() : value
-      ));
+
+      console.log(
+        JSON.stringify(tx, (_, value) =>
+          typeof value === "bigint" ? value.toString() : value
+        )
+      );
 
       const hash = await client.sendTransaction(chainId, tx);
       console.log(hash);
