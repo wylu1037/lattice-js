@@ -27,8 +27,6 @@
     "@ethersproject/units": "^5.8.0",
     "@ethersproject/wordlists": "^5.8.0",
     "@jvddavid/pino-rotating-file": "^1.0.7",
-    "@noble/curves": "^1.9.0",
-    "@noble/hashes": "^1.8.0",
     "axios": "^1.8.4",
     "ethereum-cryptography": "^3.0.0",
     "fp-ts": "^2.16.10",
