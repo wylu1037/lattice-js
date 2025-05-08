@@ -7,6 +7,12 @@ import {
 import { E, LatestBlock, O, Receipt, Transaction } from "@/common/types/index";
 import { newCrypto } from "@/crypto/index";
 import {
+  AccountLock,
+  BlockCache,
+  BlockCacheImpl,
+  newAccountLock
+} from "@/lattice/index";
+import {
   HttpClient,
   HttpClientImpl,
   HttpProvider
@@ -17,12 +23,6 @@ import {
   type RetryStrategy
 } from "@/utils/index";
 import { TransactionBuilder } from "./tx";
-import {
-  AccountLock,
-  BlockCache,
-  newAccountLock,
-  BlockCacheImpl
-} from "@/lattice/index";
 
 class Credentials {
   private readonly accountAddress: string;
@@ -81,19 +81,19 @@ class NodeConnectionConfig {
   insecure: boolean;
   ip: string;
   httpPort: number;
-  wsPort: number;
-  ginHttpPort: number;
-  jwtSecret: string;
+  wsPort?: number;
+  ginHttpPort?: number;
+  jwtSecret?: string;
   jwtTokenExpirationDuration: number; // seconds
 
   constructor(
-    insecure: boolean,
     ip: string,
     httpPort: number,
-    wsPort: number,
-    ginHttpPort: number,
-    jwtSecret: string,
-    jwtTokenExpirationDuration: number
+    wsPort?: number,
+    ginHttpPort?: number,
+    jwtSecret?: string,
+    jwtTokenExpirationDuration = 6 * 60 * 60, // 6 hours
+    insecure = true
   ) {
     this.insecure = insecure;
     this.ip = ip;
@@ -214,7 +214,7 @@ class LatticeClient {
     amount = 0,
     joule = 0
   ): Promise<E.Either<string, Error>> {
-    const result = await this.accountLock.withLock(
+    const result = await this.accountLock.withLock<E.Either<string, Error>>(
       chainId,
       credentials.getAccountAddress(),
       async () => {
@@ -300,7 +300,7 @@ class LatticeClient {
     amount = 0,
     joule = 0
   ): Promise<E.Either<string, Error>> {
-    const result = await this.accountLock.withLock(
+    const result = await this.accountLock.withLock<E.Either<string, Error>>(
       chainId,
       credentials.getAccountAddress(),
       async () => {
@@ -393,7 +393,7 @@ class LatticeClient {
     amount = 0,
     joule = 0
   ): Promise<E.Either<string, Error>> {
-    const result = await this.accountLock.withLock(
+    const result = await this.accountLock.withLock<E.Either<string, Error>>(
       chainId,
       credentials.getAccountAddress(),
       async () => {

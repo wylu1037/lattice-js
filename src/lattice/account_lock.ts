@@ -40,11 +40,6 @@ export class AccountLockImpl implements AccountLock {
   private locks = new Map<string, Mutex>();
   private lockReleases = new Map<string, () => void>();
 
-  /**
-   * Obtain account lock
-   * @param chainId Chain ID
-   * @param address Account address
-   */
   async obtain(chainId: string | number, address: string): Promise<void> {
     log.debug(`obtain account lock, chainId: ${chainId}, address: ${address}`);
     const key = `${chainId}_${address}`;
@@ -60,11 +55,6 @@ export class AccountLockImpl implements AccountLock {
     }
   }
 
-  /**
-   * Release account lock
-   * @param chainId Chain ID
-   * @param address Account address
-   */
   unlock(chainId: string | number, address: string): void {
     log.debug(`unlock account lock, chainId: ${chainId}, address: ${address}`);
     const key = `${chainId}_${address}`;
@@ -76,13 +66,6 @@ export class AccountLockImpl implements AccountLock {
     }
   }
 
-  /**
-   * Execute function with lock
-   * @param chainId Chain ID
-   * @param address Account address
-   * @param block Function to execute with lock
-   * @returns Result of the function
-   */
   async withLock<T>(
     chainId: string | number,
     address: string,
