@@ -66,20 +66,20 @@ function convertArguments(args: ParamType[], params: any[]): any[] {
 }
 
 function convertArgument(pt: ParamType, param: any): any {
-  const paramType = typeof param;
+  const tp = typeof param;
   switch (pt.baseType) {
     case "string":
-      if (paramType !== "string") {
+      if (tp !== "string") {
         throw new Error("Invalid string, expected string");
       }
       return param;
     case "address":
-      if (paramType !== "string") {
+      if (tp !== "string") {
         throw new Error("Invalid address, expected string");
       }
       return new Address(param).toETH();
     case "bool": {
-      switch (paramType) {
+      switch (tp) {
         case "string":
           return param.toLowerCase() === "true";
         default:
@@ -164,7 +164,7 @@ function convertArgument(pt: ParamType, param: any): any {
     case "uint240":
     case "uint248":
     case "uint256":
-      if (paramType === "string" || paramType === "number") {
+      if (tp === "string" || tp === "number") {
         return BigInt(param);
       }
       throw new Error("Invalid int, expected string or number");

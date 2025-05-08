@@ -33,14 +33,12 @@ export type EncodeFunc = () => Buffer;
 export interface CryptoService {
   /**
    * Generate a key pair
-   *
    * @returns The key pair
    */
   generateKeyPair(): KeyPair;
 
   /**
    * Compress the public key
-   *
    * @param publicKey - The public key
    * @returns The compressed public key
    */
@@ -48,7 +46,6 @@ export interface CryptoService {
 
   /**
    * Convert the public key to the lattice address
-   *
    * @param publicKey - The uncompressed public key, the length is 64
    * @returns The lattice address, like `zltc_o2Vb5bf6G8vpvXeanMWrLMJs3E7vq8La8`
    */
@@ -56,7 +53,6 @@ export interface CryptoService {
 
   /**
    * Hash the data
-   *
    * @param data - The data to hash
    * @returns The hash bytes
    */
@@ -64,7 +60,6 @@ export interface CryptoService {
 
   /**
    * Encode the hash
-   *
    * @param encodeFunc - The encode function
    * @returns The encoded hash
    */
@@ -72,7 +67,6 @@ export interface CryptoService {
 
   /**
    * Sign the data
-   *
    * @param data - The data to sign
    * @param privateKey - The private key, the length is 32 bytes
    * @returns The signature
@@ -81,7 +75,6 @@ export interface CryptoService {
 
   /**
    * Verify the signature
-   *
    * @param data - The data to verify
    * @param signature - The signature
    * @param uncompressedPublicKey - The uncompressed public key, the length is 65 bytes
