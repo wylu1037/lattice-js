@@ -28,4 +28,11 @@ class BuiltinContract {
   }
 }
 
-export { BuiltinContract };
+type writeTraceabilityRequest = {
+  protocolUri: number;
+  dataId: string;
+  data: string[];
+  businessContractAddress: string;
+};
+
+export { BuiltinContract, type writeTraceabilityRequest };

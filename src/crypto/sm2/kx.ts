@@ -23,7 +23,8 @@ function hkdf(z: Uint8Array, keylen: number) {
     ctShift[1] = ct >> 16 & 0x00ff
     ctShift[2] = ct >> 8 & 0x00ff
     ctShift[3] = ct & 0x00ff
-    t = sm3(utils.concatBytes(z, ctShift))
+    //t = sm3(utils.concatBytes(z, ctShift))
+    t = sm3(utils.concatBytes(z, ctShift)) as Uint8Array<ArrayBuffer>;
     ct++
     offset = 0
   }
