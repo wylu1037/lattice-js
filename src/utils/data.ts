@@ -4,28 +4,32 @@
  *
  *  @_subsection api/utils:Data Helpers  [about-data]
  */
-import {BytesLike, hexlify} from "@ethersproject/bytes";
+import { BytesLike, hexlify } from "@ethersproject/bytes";
 import { assert, assertArgument } from "./errors.js";
 
-function _getBytes(value: BytesLike, name?: string, copy?: boolean): Uint8Array {
-if (value instanceof Uint8Array) {
-  if (copy) {
-    return new Uint8Array(value);
+function _getBytes(
+  value: BytesLike,
+  name?: string,
+  copy?: boolean
+): Uint8Array {
+  if (value instanceof Uint8Array) {
+    if (copy) {
+      return new Uint8Array(value);
+    }
+    return value;
   }
-  return value;
-}
 
-if (typeof value === "string" && value.match(/^0x(?:[0-9a-f][0-9a-f])*$/i)) {
-  const result = new Uint8Array((value.length - 2) / 2);
-  let offset = 2;
-  for (let i = 0; i < result.length; i++) {
-    result[i] = parseInt(value.substring(offset, offset + 2), 16);
-    offset += 2;
+  if (typeof value === "string" && value.match(/^0x(?:[0-9a-f][0-9a-f])*$/i)) {
+    const result = new Uint8Array((value.length - 2) / 2);
+    let offset = 2;
+    for (let i = 0; i < result.length; i++) {
+      result[i] = parseInt(value.substring(offset, offset + 2), 16);
+      offset += 2;
+    }
+    return result;
   }
-  return result;
-}
 
-assertArgument(false, "invalid BytesLike value", name || "value", value);
+  assertArgument(false, "invalid BytesLike value", name || "value", value);
 }
 
 /**
@@ -36,7 +40,7 @@ assertArgument(false, "invalid BytesLike value", name || "value", value);
  *  @see: getBytesCopy
  */
 export function getBytes(value: BytesLike, name?: string): Uint8Array {
-return _getBytes(value, name, false);
+  return _getBytes(value, name, false);
 }
 
 /**
@@ -47,9 +51,8 @@ return _getBytes(value, name, false);
  *  @see: getBytes
  */
 export function getBytesCopy(value: BytesLike, name?: string): Uint8Array {
-return _getBytes(value, name, true);
+  return _getBytes(value, name, true);
 }
-
 
 /**
  *  Returns true if %%value%% is a valid [[HexString]].
@@ -58,19 +61,22 @@ return _getBytes(value, name, true);
  *  %%value%% is a valid [[DataHexString]] of %%length%% (if a //number//)
  *  bytes of data (e.g. ``0x1234`` is 2 bytes).
  */
-export function isHexString(value: any, length?: number | boolean): value is `0x${ string }` {
-if (typeof value !== "string" || !value.match(/^0x[0-9A-Fa-f]*$/)) {
-  return false;
-}
+export function isHexString(
+  value: any,
+  length?: number | boolean
+): value is `0x${string}` {
+  if (typeof value !== "string" || !value.match(/^0x[0-9A-Fa-f]*$/)) {
+    return false;
+  }
 
-if (typeof length === "number" && value.length !== 2 + 2 * length) {
-  return false;
-}
-if (length === true && value.length % 2 !== 0) {
-  return false;
-}
+  if (typeof length === "number" && value.length !== 2 + 2 * length) {
+    return false;
+  }
+  if (length === true && value.length % 2 !== 0) {
+    return false;
+  }
 
-return true;
+  return true;
 }
 
 /**
@@ -78,17 +84,17 @@ return true;
  *  within %%data%%.
  */
 export function concat(datas: ReadonlyArray<BytesLike>): string {
-return `0x${datas.map((d) => hexlify(d).substring(2)).join("")}`;
+  return `0x${datas.map((d) => hexlify(d).substring(2)).join("")}`;
 }
 
 /**
  *  Returns the length of %%data%%, in bytes.
  */
 export function dataLength(data: BytesLike): number {
-if (isHexString(data, true)) {
-  return (data.length - 2) / 2;
-}
-return getBytes(data).length;
+  if (isHexString(data, true)) {
+    return (data.length - 2) / 2;
+  }
+  return getBytes(data).length;
 }
 
 /**
@@ -97,18 +103,22 @@ return getBytes(data).length;
  *
  *  By default %%start%% is 0 and %%end%% is the length of %%data%%.
  */
-export function dataSlice(data: BytesLike, start?: number, end?: number): string {
-const bytes = getBytes(data);
-if (end != null && end > bytes.length) {
-  assert(false, "cannot slice beyond data bounds", "BUFFER_OVERRUN", {
-    buffer: bytes,
-    length: bytes.length,
-    offset: end
-  });
-}
-return hexlify(
-  bytes.slice(start == null ? 0 : start, end == null ? bytes.length : end)
-);
+export function dataSlice(
+  data: BytesLike,
+  start?: number,
+  end?: number
+): string {
+  const bytes = getBytes(data);
+  if (end != null && end > bytes.length) {
+    assert(false, "cannot slice beyond data bounds", "BUFFER_OVERRUN", {
+      buffer: bytes,
+      length: bytes.length,
+      offset: end
+    });
+  }
+  return hexlify(
+    bytes.slice(start == null ? 0 : start, end == null ? bytes.length : end)
+  );
 }
 
 /**
@@ -124,27 +134,27 @@ export function stripZerosLeft(data: BytesLike): string {
 }
 
 function zeroPad(data: BytesLike, length: number, left: boolean): string {
-const bytes = getBytes(data);
-assert(
-  length >= bytes.length,
-  "padding exceeds data length",
-  "BUFFER_OVERRUN",
-  {
-    buffer: new Uint8Array(bytes),
-    length: length,
-    offset: length + 1
+  const bytes = getBytes(data);
+  assert(
+    length >= bytes.length,
+    "padding exceeds data length",
+    "BUFFER_OVERRUN",
+    {
+      buffer: new Uint8Array(bytes),
+      length: length,
+      offset: length + 1
+    }
+  );
+
+  const result = new Uint8Array(length);
+  result.fill(0);
+  if (left) {
+    result.set(bytes, length - bytes.length);
+  } else {
+    result.set(bytes, 0);
   }
-);
 
-const result = new Uint8Array(length);
-result.fill(0);
-if (left) {
-  result.set(bytes, length - bytes.length);
-} else {
-  result.set(bytes, 0);
-}
-
-return hexlify(result);
+  return hexlify(result);
 }
 
 /**
@@ -158,7 +168,7 @@ return hexlify(result);
  *  (e.g. ``uint128``).
  */
 export function zeroPadValue(data: BytesLike, length: number): string {
-return zeroPad(data, length, true);
+  return zeroPad(data, length, true);
 }
 
 /**
@@ -172,5 +182,5 @@ return zeroPad(data, length, true);
  *  (e.g. ``bytes16``).
  */
 export function zeroPadBytes(data: BytesLike, length: number): string {
-return zeroPad(data, length, false);
+  return zeroPad(data, length, false);
 }
