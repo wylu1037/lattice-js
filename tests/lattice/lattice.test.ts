@@ -4,11 +4,12 @@ import {
   ChainConfig,
   Credentials,
   LatticeClient,
-  NodeConnectionConfig
+  NodeConnectionConfig,
+  TraceabilityContract
 } from "@/lattice/index";
 import { LatticeAbi } from "@/utils/abi";
 
-describe.skip("lattice client", () => {
+describe("lattice client", () => {
   const chainId = 1;
   const chainConfig = new ChainConfig(Curves.Sm2p256v1, true);
   const nodeConnectionConfig = new NodeConnectionConfig("192.168.3.51", 13000);
@@ -29,6 +30,22 @@ describe.skip("lattice client", () => {
       console.log("transfer success, hash:", result.left);
     } else {
       console.error("transfer failed", result.right);
+    }
+  });
+
+  it("should be able to cretae business", async () => {
+    const traceability = new TraceabilityContract();
+    const code = traceability.createBusiness();
+    const result = await lattice.callContractWaitReceipt(
+      credentials,
+      chainId,
+      TraceabilityContract.ADDRESS_FOR_CREATE_BUSINESS,
+      code
+    );
+    if (E.isLeft(result)) {
+      console.log("create business success, hash:", result.left);
+    } else {
+      console.error("create business failed", result.right);
     }
   });
 

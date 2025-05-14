@@ -409,7 +409,7 @@ class LatticeClient {
         }
 
         const block = cachedResult.left;
-        const tx = TransactionBuilder.builder(TransactionTypes.DeployContract)
+        const tx = TransactionBuilder.builder(TransactionTypes.CallContract)
           .setBlock(block)
           .setOwner(credentials.getAccountAddress())
           .setLinker(contractAddress)
