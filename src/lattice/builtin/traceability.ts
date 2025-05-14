@@ -50,6 +50,7 @@ interface Traceability {
 
 class TraceabilityContract implements Traceability {
   private readonly iface: LatticeAbi;
+  private readonly builtinContract: BuiltinContract;
   /**
    * The address for creating business
    */
@@ -57,7 +58,16 @@ class TraceabilityContract implements Traceability {
     "zltc_QLbz7JHiBTspS9WTWJUrbNsB5wbENMweQ";
 
   constructor() {
+    this.builtinContract = traceability;
     this.iface = traceability.getLatticeInterface();
+  }
+
+  getIface() {
+    return this.iface;
+  }
+
+  getBuiltinContract() {
+    return this.builtinContract;
   }
 
   createBusiness(): string {

@@ -26,6 +26,10 @@ class BuiltinContract {
   getAddress() {
     return this.address;
   }
+
+  getAbi() {
+    return this.abiString;
+  }
 }
 
 type writeTraceabilityRequest = {

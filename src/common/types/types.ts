@@ -1,7 +1,7 @@
 
 export class Receipt {
   confirmTime?: string;
-  succcess: boolean;
+  success: boolean;
   receiptIndex: number;
   tBlockHash: string;
   contractAddress?: string;
@@ -13,7 +13,7 @@ export class Receipt {
 
   constructor(
     confirmTime: string,
-    succcess: boolean,
+    success: boolean,
     receiptIndex: number,
     tBlockHash: string,
     contractAddress: string,
@@ -24,7 +24,7 @@ export class Receipt {
     dblockNumber: number
   ) {
     this.confirmTime = confirmTime;
-    this.succcess = succcess;
+    this.success = success;
     this.receiptIndex = receiptIndex;
     this.tBlockHash = tBlockHash;
     this.contractAddress = contractAddress;

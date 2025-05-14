@@ -1,6 +1,6 @@
 {
   "name": "@zlattice/lattice-js",
-  "version": "1.0.2-beta.4",
+  "version": "1.0.2-beta.6",
   "description": "",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
