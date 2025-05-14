@@ -1,5 +1,5 @@
 import { decodeBytes32String, encodeBytes32String } from "@/utils/index.js";
-import { hexlify } from "@/utils/index.js";
+import { hexlify } from "@ethersproject/bytes";
 import { describe, expect, it } from "vitest";
 
 describe("Bytes32 String Tests", () => {

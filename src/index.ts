@@ -1,6 +1,6 @@
-export * as common from "./common";
-export * as lattice from "./lattice";
-export * as crypto from "./crypto";
-export * as providers from "./providers";
-export * as utils from "./utils";
+export * from "./common";
+export * from "./lattice";
+export * from "./crypto";
+export * from "./providers";
+export * from "./utils";
 export * from "./logger";

@@ -1,6 +1,6 @@
-import { hexlify } from "@/utils";
 import { encodeBytes32Array } from "@/utils";
 import { LatticeAbi } from "@/utils/abi";
+import { hexlify } from "@ethersproject/bytes";
 import { BuiltinContract, type writeTraceabilityRequest } from "./types";
 
 interface Traceability {

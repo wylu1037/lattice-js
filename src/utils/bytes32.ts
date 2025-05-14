@@ -4,9 +4,9 @@
  *  @_docloc: api/utils:Bytes32 Strings
  */
 
-import { getBytes, toUtf8Bytes, toUtf8String, zeroPadBytes } from "./index";
-
-import type { BytesLike } from "./index";
+import type { BytesLike } from "@ethersproject/bytes";
+import { toUtf8Bytes, toUtf8String } from "@ethersproject/strings";
+import { getBytes, zeroPadBytes } from "./index";
 
 /**
  *  Encodes %%text%% as a Bytes32 string.
