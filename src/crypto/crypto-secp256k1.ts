@@ -1,8 +1,8 @@
+import type { KeyPair } from "@/common/index";
 import { log } from "@/logger";
 import { randomBytes } from "@noble/hashes/utils";
 import { secp256k1 } from "ethereum-cryptography/secp256k1";
-import type {CryptoService, EncodeFunc} from "./crypto";
-import type { KeyPair } from "./types";
+import type { CryptoService, EncodeFunc } from "./crypto";
 
 export class NIST implements CryptoService {
   generateKeyPair(): KeyPair {

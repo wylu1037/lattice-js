@@ -1,4 +1,4 @@
-import { Address } from "@/common/address";
+import { Address } from "@/common/types/address";
 import { Interface, ParamType } from "@ethersproject/abi";
 import { isHexString } from "@ethersproject/bytes";
 

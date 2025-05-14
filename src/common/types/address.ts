@@ -1,5 +1,5 @@
-import { Base58Impl, Base58Interface } from '@/utils/base58';
-import { ADDRESS_TITLE, ADDRESS_VERSION, HEX_PREFIX } from './constants';
+import { Base58Impl, Base58Interface } from "@/utils/base58";
+import { ADDRESS_TITLE, ADDRESS_VERSION, HEX_PREFIX } from "../constants";
 
 // This is a address class. Can be converted to eth address or zltc address
 class Address {

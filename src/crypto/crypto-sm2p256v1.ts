@@ -1,12 +1,19 @@
 import {ADDRESS_BYTES_LENGTH, ADDRESS_TITLE, HEX_PREFIX, SM2P256V1_SIGNATURE_LENGTH, SM2P256V1_SIGNATURE_REMARK} from "@/common/constants";
 import { ADDRESS_VERSION } from "@/common/constants";
+import type { KeyPair } from "@/common/index";
+import {
+  compressPublicKeyHex,
+  doSignature,
+  doVerifySignature,
+  generateKeyPairHex,
+  getHash,
+  getPublicKeyFromPrivateKey
+} from "@/crypto/sm2";
 import sm3 from "@/crypto/sm3";
 import {log} from "@/logger";
 import {Base58Impl, type Base58Interface} from "@/utils/base58";
 import type {CryptoService} from "./crypto";
 import type { EncodeFunc } from "./crypto";
-import {compressPublicKeyHex, doSignature, doVerifySignature, generateKeyPairHex, getHash, getPublicKeyFromPrivateKey } from "./sm2";
-import type {KeyPair} from "./types";
 
 export class GM implements CryptoService {
   generateKeyPair(): KeyPair {

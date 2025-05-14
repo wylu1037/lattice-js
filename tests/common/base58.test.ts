@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Address } from "../../src/common/address";
 import { ADDRESS_TITLE, ADDRESS_VERSION } from "../../src/common/constants";
+import { Address } from "../../src/common/types/address";
 import { Base58Impl, Base58Interface } from "../../src/utils/base58.js";
 
 describe("Base58", () => {

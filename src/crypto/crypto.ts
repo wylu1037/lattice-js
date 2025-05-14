@@ -1,7 +1,7 @@
 import { type Curve, Curves } from "@/common/constants";
+import type { KeyPair } from "@/common/index";
 import { NIST } from "./crypto-secp256k1";
 import { GM } from "./crypto-sm2p256v1";
-import type { KeyPair } from "./types";
 
 const cryptoServiceMap = new Map<Curve, CryptoService>();
 

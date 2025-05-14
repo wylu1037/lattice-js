@@ -1,5 +1,5 @@
 import { TransactionType } from "@/common/constants";
-import { Address, LatestBlock, Transaction, UInt64 } from "@/common/types/index";
+import { Addr, LatestBlock, Transaction, UInt64 } from "@/common/types/index";
 
 /**
  * Builder is a builder for the Transaction class.
@@ -10,8 +10,8 @@ import { Address, LatestBlock, Transaction, UInt64 } from "@/common/types/index"
  */
 interface Builder {
   setBlock(block: LatestBlock): Builder;
-  setOwner(owner: Address): Builder;
-  setLinker(linker: Address): Builder;
+  setOwner(owner: Addr): Builder;
+  setLinker(linker: Addr): Builder;
   setAmount(amount: UInt64): Builder;
   setJoule(joule: UInt64): Builder;
   setPayload(payload: string): Builder;
@@ -38,12 +38,12 @@ class TransactionBuilder implements Builder {
     return this;
   }
 
-  setOwner(owner: Address): Builder {
+  setOwner(owner: Addr): Builder {
     this.tx.owner = owner;
     return this;
   }
 
-  setLinker(linker: Address): Builder {
+  setLinker(linker: Addr): Builder {
     this.tx.linker = linker;
     return this;
   }

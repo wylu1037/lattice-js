@@ -1,4 +1,4 @@
-import { decodeBytes32String, encodeBytes32String } from "@/abi/bytes32.js";
+import { decodeBytes32String, encodeBytes32String } from "@/utils/index.js";
 import { hexlify } from "@/utils/index.js";
 import { describe, expect, it } from "vitest";
 

@@ -1,46 +1,73 @@
 <h1 align="center">LatticeJS</h1>
 
-<div style="display:flex; justify-content:center; align-items: center; gap: 5px">
-    <img alt="Static Badge" src="https://img.shields.io/badge/TypeScript-blue">
-    <img alt="Static Badge" src="https://img.shields.io/badge/npm-v10.2.3-orange">
-    <img alt="Static Badge" src="https://img.shields.io/badge/Node.js-v18.19.0-green">
-    <img alt="Static Badge" src="https://wylu1037.github.io/lattice-js/badges/coverage.svg">
+<div align="center">
+    <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-blue">
+    <img alt="npm" src="https://img.shields.io/badge/npm-v10.2.3-orange">
+    <img alt="Node.js" src="https://img.shields.io/badge/Node.js-v18.19.0-green">
+    <img alt="Coverage" src="https://wylu1037.github.io/lattice-js/badges/coverage.svg">
 </div>
 
-<div style="display:flex; justify-content:center; align-items: center; margin-top: 8px">
+## Overview
 
+LatticeJS is a comprehensive SDK implemented in TypeScript for blockchain interactions with the Lattice network. This library provides a set of tools for cryptographic operations, wallet management, and blockchain communication.
 
-</div>
+## Features
 
-## Intro
+- **Cryptographic Suite**: Full implementation of SM2, SM3, and SM4 cryptographic algorithms
+- **Ethereum Compatibility**: Built with ethers.js components for seamless Ethereum integration
+- **Wallet Management**: Secure key generation and management
+- **Provider System**: Flexible connection to various blockchain nodes
+- **Robust Logging**: Built-in logging system with rotation capabilities
 
-Lattice SDK implemented in TypeScript.
+## Installation
 
-[Sm2](https://github.com/Cubelrti/sm-crypto-v2/)
+```bash
+npm install @zlattice/lattice-js
 
-## Tech stack
+# or with pnpm
+pnpm add @zlattice/lattice-js
+```
 
-+ [Axios](https://github.com/axios/axios) Promise based HTTP client for the browser and node.js
-+ [Pino](https://github.com/pinojs/pino) 🌲 super fast, all natural json logger
+## Core Dependencies
 
-## Test
+- [Ethers Components](https://docs.ethers.org/v5/) - Ethereum utilities and cryptography
+- [Noble Curves](https://github.com/paulmillr/noble-curves) - High-security, easily auditable elliptic curve cryptography
+- [Noble Hashes](https://github.com/paulmillr/noble-hashes) - Secure, auditable hashing implementations
+- [Axios](https://github.com/axios/axios) - Promise-based HTTP client for browser and Node.js
+- [Pino](https://github.com/pinojs/pino) - Super fast, all-natural JSON logger
+- [Zod](https://github.com/colinhacks/zod) - TypeScript-first schema validation
 
-How to use [Mocha](https://github.com/mochajs/mocha)
-and [Chai](https://github.com/chaijs/chai), [Click me](https://www.testim.io/blog/mocha-for-typescript-testing/) to
-explore.
+## Testing
 
-> Clear the `Node.js` module cache and reinstall the dependencies.
+This project uses [Vitest](https://vitest.dev/) for testing with coverage reporting:
 
-```shell
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run coverage
+
+# Watch mode for development
+npm run test:watch
+```
+
+If you encounter module-related issues, try cleaning your dependencies:
+
+```bash
 rm -rf node_modules
 npm cache clean --force
 npm install
 ```
 
-## Plan
+## Documentation
 
-🗓️
+Comprehensive documentation is being built with [VitePress](https://vitepress.dev/).
 
-## Website
+## Contributing
 
-Build with [VitePress](https://vitepress.dev/) or [Astro](https://astro.build/) 
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the Apache-2.0 License - see the [LICENSE](LICENSE) file for details.

@@ -53,7 +53,7 @@ class TraceabilityContract implements Traceability {
   /**
    * The address for creating business
    */
-  private static readonly ADDRESS_FOR_CREATE_BUSINESS =
+  public static readonly ADDRESS_FOR_CREATE_BUSINESS =
     "zltc_QLbz7JHiBTspS9WTWJUrbNsB5wbENMweQ";
 
   constructor() {

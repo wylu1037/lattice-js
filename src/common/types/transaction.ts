@@ -1,8 +1,8 @@
-import { Address as Addr } from "@/common/address";
 import { type TransactionType, TransactionTypeCodeRecord, TransactionTypes, ZERO_ADDRESS, ZERO_HASH } from "@/common/constants";
 import { type Curve } from "@/common/constants";
+import { Address } from "@/common/types/address";
 import { E, O } from "@/common/types/index";
-import type { Address, Hash, UInt64 } from "@/common/types/type.alias";
+import type { Addr, Hash, UInt64 } from "@/common/types/type.alias";
 import { newCrypto } from "@/crypto/crypto";
 import { BigNumber } from '@ethersproject/bignumber';
 import { arrayify, hexlify, stripZeros } from '@ethersproject/bytes'
@@ -12,11 +12,11 @@ export class Transaction {
   number?: number;
   type: TransactionType;
   parentHash?: Hash;
-  hub?: Address[];
+  hub?: Addr[];
   daemonHash?: Hash;
   codeHash?: Hash;
-  owner: Address;
-  linker: Address;
+  owner: Addr;
+  linker: Addr;
   amount?: UInt64;
   joule?: UInt64;
   difficulty?: UInt64;
@@ -31,11 +31,11 @@ export class Transaction {
     number: number,
     type: TransactionType,
     parentHash: Hash,
-    hub: Address[],
+    hub: Addr[],
     daemonHash: Hash,
     codeHash: Hash,
-    owner: Address,
-    linker: Address,
+    owner: Addr,
+    linker: Addr,
     amount: UInt64,
     joule: UInt64,
     difficulty: UInt64,
@@ -169,8 +169,8 @@ export class Transaction {
         this.hub,
         this.daemonHash,
         this.codeHash || ZERO_HASH,
-        new Addr(this.owner).toETH(),
-        new Addr(this.linker).toETH(),
+        new Address(this.owner).toETH(),
+        new Address(this.linker).toETH(),
         this.handleNumber(this.amount ?? 0),
         this.handleNumber(this.joule ?? 0),
         this.handleNumber(0), // difficulty
