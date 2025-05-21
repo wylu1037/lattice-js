@@ -1,12 +1,12 @@
 import { type TransactionType, TransactionTypeCodeRecord, TransactionTypes, ZERO_ADDRESS, ZERO_HASH } from "@/common/constants";
 import { type Curve } from "@/common/constants";
 import { Address } from "@/common/types/address";
-import { E, O } from "@/common/types/index";
 import type { Addr, Hash, UInt64 } from "@/common/types/type.alias";
 import { newCrypto } from "@/crypto/crypto";
-import { BigNumber } from '@ethersproject/bignumber';
-import { arrayify, hexlify, stripZeros } from '@ethersproject/bytes'
+import { BigNumber } from "@ethersproject/bignumber";
+import { arrayify, hexlify, stripZeros } from "@ethersproject/bytes";
 import { encode as rlpEncode } from "@ethersproject/rlp";
+import { Result, err, ok } from "neverthrow";
 
 export class Transaction {
   number?: number;
@@ -91,14 +91,18 @@ export class Transaction {
     );
   }
 
-  validate(): Error | null {
+  /**
+   * Validate the transaction
+   * @returns The error or null
+   */
+  validate(): Result<null, Error> {
     if (this.number === undefined) {
-      return new Error("number is undefined");
+      return err(new Error("number is undefined"));
     }
     if (this.type === undefined) {
-      return new Error("type is undefined");
+      return err(new Error("type is undefined"));
     }
-    return null;
+    return ok(null);
   }
 
   /**
@@ -106,13 +110,13 @@ export class Transaction {
    * @param chainId - The chain id of the transaction
    * @param curve - The curve of the transaction
    * @param privateKey - The private key of the transaction
-   * @returns The signed transaction
+   * @returns The transaction signature
    */
   public signTx(
     chainId: number,
     curve: Curve,
     privateKey: string
-  ): O.Option<Error> {
+  ): Result<string, Error> {
     const hash = this.rlpEncodeHash(chainId, curve);
     return this.signHash(hash, curve, privateKey);
   }
@@ -122,26 +126,33 @@ export class Transaction {
    * @param hash - The hash of the transaction
    * @param curve - The curve of the transaction
    * @param privateKey - The private key of the transaction
-   * @returns The signed transaction
+   * @returns The transaction signature
    */
   public signHash(
     hash: Buffer,
     curve: Curve,
     privateKey: string
-  ): O.Option<Error> {
+  ): Result<string, Error> {
     const result = this.doSign(curve, hash, privateKey);
-    if (E.isRight(result)) {
-      return O.some(result.right);
+    if (result.isOk()) {
+      this.sign = `0x${result.value.toString("hex")}`;
+      return ok(this.sign);
     }
-    this.sign = `0x${result.left.toString("hex")}`;
-    return O.none;
+    return err(result.error);
   }
 
+  /**
+   * Sign the hash of the transaction
+   * @param curve - The curve of the transaction
+   * @param hash - The hash of the transaction
+   * @param privateKey - The private key of the transaction
+   * @returns The transaction signature(buffer)
+   */
   doSign(
     curve: Curve,
     hash: Buffer,
     privateKey: string
-  ): E.Either<Buffer, Error> {
+  ): Result<Buffer, Error> {
     try {
       const cryptoService = newCrypto(curve);
       let _privateKey = privateKey;
@@ -149,9 +160,9 @@ export class Transaction {
         _privateKey = _privateKey.slice(2);
       }
       const signature = cryptoService.sign(hash, _privateKey);
-      return E.left(Buffer.from(signature, "hex"));
+      return ok(Buffer.from(signature, "hex"));
     } catch (error) {
-      return E.right(error as Error);
+      return err(error as Error);
     }
   }
 

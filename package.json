@@ -1,6 +1,6 @@
 {
   "name": "@zlattice/lattice-js",
-  "version": "1.0.2-beta.6",
+  "version": "1.0.2-beta.7",
   "description": "",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -47,7 +47,7 @@
     "axios": "^1.8.4",
     "cacheable": "^1.9.0",
     "ethereum-cryptography": "^3.0.0",
-    "fp-ts": "^2.16.10",
+    "neverthrow": "^8.2.0",
     "pino": "^9.6.0",
     "protobufjs": "^7.5.1",
     "zod": "^3.24.3"

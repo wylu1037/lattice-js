@@ -4,7 +4,7 @@ import {
   TransactionTypes,
   ZERO_ADDRESS
 } from "@/common/constants";
-import { E, LatestBlock, O, Receipt, Transaction } from "@/common/types/index";
+import { LatestBlock, Receipt, Transaction } from "@/common/types/index";
 import { newCrypto } from "@/crypto/index";
 import {
   AccountLock,
@@ -12,6 +12,7 @@ import {
   BlockCacheImpl,
   newAccountLock
 } from "@/lattice/index";
+import { log } from "@/logger";
 import {
   HttpClient,
   HttpClientImpl,
@@ -22,6 +23,7 @@ import {
   RetryHandler,
   type RetryStrategy
 } from "@/utils/index";
+import { ResultAsync, errAsync, ok } from "neverthrow";
 import { TransactionBuilder } from "./tx";
 
 class Credentials {
@@ -159,41 +161,51 @@ class LatticeClient {
    * @param retries The number of retries, default is 10
    * @returns E.Either<Receipt, Error>, left is the receipt, right is the error
    */
-  async waitReceipt(
+  waitReceipt(
     chainId: number,
     hash: string,
     retryStrategy: RetryStrategy = FixedDelayStrategy.default,
     retries = 10
-  ): Promise<E.Either<Receipt, Error>> {
+  ): ResultAsync<Receipt, Error> {
     const retryHandler = new RetryHandler<Receipt>(retryStrategy, retries);
-    const receipt = await retryHandler.execute(async () => {
-      return await this.httpClient.getReceipt(chainId, hash);
-    });
-    return E.left(receipt);
+    return ResultAsync.fromPromise(
+      retryHandler.execute(async () => {
+        return await this.httpClient.getReceipt(chainId, hash);
+      }),
+      (error) => {
+        log.error(`Failed to get receipt: ${error}`);
+        return error instanceof Error ? error : new Error(String(error));
+      }
+    );
   }
 
-  private async handleTransaction(
+  private handleTransaction(
     chainId: number,
     credentials: Credentials,
     transaction: Transaction,
     block: LatestBlock
-  ) {
-    const option = transaction.signTx(
+  ): ResultAsync<string, Error> {
+    const signResult = transaction.signTx(
       chainId,
       this.chainConfig.curve,
       credentials.getPrivateKey()
     );
-    if (O.isSome(option)) {
-      return E.right(option.value);
+    if (signResult.isErr()) {
+      return errAsync(signResult.error);
     }
 
-    const hash = await this.httpClient.sendTransaction(chainId, transaction);
-
-    block.currentTBlockNumber = block.currentTBlockNumber + 1;
-    block.currentTBlockHash = hash;
-    this.blockCache.putBlock(chainId, credentials.getAccountAddress(), block);
-
-    return E.left(hash);
+    return ResultAsync.fromPromise(
+      this.httpClient.sendTransaction(chainId, transaction),
+      (error) => {
+        log.error(`Failed to send transaction: ${error}`);
+        return error instanceof Error ? error : new Error(String(error));
+      }
+    ).andThen((hash) => {
+      block.currentTBlockNumber = block.currentTBlockNumber + 1;
+      block.currentTBlockHash = hash;
+      this.blockCache.putBlock(chainId, credentials.getAccountAddress(), block);
+      return ok(hash);
+    });
   }
 
   /**
@@ -204,32 +216,28 @@ class LatticeClient {
    * @param payload The payload, should be a hex string
    * @param amount The amount, default is 0
    * @param joule The joule, default is 0
-   * @returns E.Either<string, Error>, left is the hash, right is the error
+   * @returns ResultAsync<string, Error>, left is the hash, right is the error
    */
-  async transfer(
+  transfer(
     credentials: Credentials,
     chainId: number,
     linker: string,
     payload: string,
     amount = 0,
     joule = 0
-  ): Promise<E.Either<string, Error>> {
-    const result = await this.accountLock.withLock<E.Either<string, Error>>(
+  ): ResultAsync<string, Error> {
+    return this.accountLock.withLock<string>(
       chainId,
       credentials.getAccountAddress(),
       async () => {
-        const cachedResult = await this.blockCache.getBlock(
+        const block = await this.blockCache.getBlock(
           chainId,
           credentials.getAccountAddress(),
           async (chainId, address) => {
             return await this.httpClient.getLatestBlock(chainId, address);
           }
         );
-        if (E.isRight(cachedResult)) {
-          return E.right(cachedResult.right);
-        }
 
-        const block = cachedResult.left;
         const tx = TransactionBuilder.builder(TransactionTypes.Send)
           .setBlock(block)
           .setOwner(credentials.getAccountAddress())
@@ -238,11 +246,20 @@ class LatticeClient {
           .setAmount(amount)
           .setJoule(joule)
           .build();
-        return await this.handleTransaction(chainId, credentials, tx, block);
+
+        return await this.handleTransaction(
+          chainId,
+          credentials,
+          tx,
+          block
+        ).match(
+          (hash) => hash,
+          (error) => {
+            throw error;
+          }
+        );
       }
     );
-
-    return result;
   }
 
   /**
@@ -257,7 +274,7 @@ class LatticeClient {
    * @param retries The number of retries, default is 10
    * @returns E.Either<Receipt, Error>, left is the receipt, right is the error
    */
-  async transferWaitReceipt(
+  transferWaitReceipt(
     credentials: Credentials,
     chainId: number,
     linker: string,
@@ -266,20 +283,17 @@ class LatticeClient {
     joule = 0,
     retryStrategy: RetryStrategy = FixedDelayStrategy.default,
     retries = 10
-  ): Promise<E.Either<Receipt, Error>> {
-    const result = await this.transfer(
+  ): ResultAsync<Receipt, Error> {
+    return this.transfer(
       credentials,
       chainId,
       linker,
       payload,
       amount,
       joule
-    );
-    if (E.isRight(result)) {
-      return E.right(result.right);
-    }
-    const hash = result.left;
-    return await this.waitReceipt(chainId, hash, retryStrategy, retries);
+    ).andThen((hash) => {
+      return this.waitReceipt(chainId, hash, retryStrategy, retries);
+    });
   }
 
   /**
@@ -292,30 +306,26 @@ class LatticeClient {
    * @param joule The joule, default is 0
    * @returns E.Either<string, Error>, left is the hash, right is the error
    */
-  async deployContract(
+  deployContract(
     credentials: Credentials,
     chainId: number,
     code: string,
     payload = HEX_PREFIX,
     amount = 0,
     joule = 0
-  ): Promise<E.Either<string, Error>> {
-    const result = await this.accountLock.withLock<E.Either<string, Error>>(
+  ): ResultAsync<string, Error> {
+    return this.accountLock.withLock<string>(
       chainId,
       credentials.getAccountAddress(),
       async () => {
-        const cachedResult = await this.blockCache.getBlock(
+        const block = await this.blockCache.getBlock(
           chainId,
           credentials.getAccountAddress(),
           async (chainId, address) => {
             return await this.httpClient.getLatestBlock(chainId, address);
           }
         );
-        if (E.isRight(cachedResult)) {
-          return E.right(cachedResult.right);
-        }
 
-        const block = cachedResult.left;
         const tx = TransactionBuilder.builder(TransactionTypes.DeployContract)
           .setBlock(block)
           .setOwner(credentials.getAccountAddress())
@@ -325,15 +335,24 @@ class LatticeClient {
           .setAmount(amount)
           .setJoule(joule)
           .build();
-
         const codeHash = newCrypto(this.chainConfig.curve).hash(
           Buffer.from(code.startsWith(HEX_PREFIX) ? code.slice(2) : code, "hex")
         );
         tx.codeHash = `0x${codeHash.toString("hex")}`;
-        return await this.handleTransaction(chainId, credentials, tx, block);
+
+        return await this.handleTransaction(
+          chainId,
+          credentials,
+          tx,
+          block
+        ).match(
+          (hash) => hash,
+          (error) => {
+            throw error;
+          }
+        );
       }
     );
-    return result;
   }
 
   /**
@@ -348,7 +367,7 @@ class LatticeClient {
    * @param retries The number of retries, default is 10
    * @returns E.Either<Receipt, Error>, left is the receipt, right is the error
    */
-  async deployContractWaitReceipt(
+  deployContractWaitReceipt(
     credentials: Credentials,
     chainId: number,
     code: string,
@@ -357,20 +376,17 @@ class LatticeClient {
     joule = 0,
     retryStrategy: RetryStrategy = FixedDelayStrategy.default,
     retries = 10
-  ): Promise<E.Either<Receipt, Error>> {
-    const result = await this.deployContract(
+  ): ResultAsync<Receipt, Error> {
+    return this.deployContract(
       credentials,
       chainId,
       code,
       payload,
       amount,
       joule
-    );
-    if (E.isRight(result)) {
-      return E.right(result.right);
-    }
-    const hash = result.left;
-    return await this.waitReceipt(chainId, hash, retryStrategy, retries);
+    ).andThen((hash) => {
+      return this.waitReceipt(chainId, hash, retryStrategy, retries);
+    });
   }
 
   /**
@@ -384,7 +400,7 @@ class LatticeClient {
    * @param joule The joule, default is 0
    * @returns E.Either<string, Error>, left is the hash, right is the error
    */
-  async callContract(
+  callContract(
     credentials: Credentials,
     chainId: number,
     contractAddress: string,
@@ -392,23 +408,19 @@ class LatticeClient {
     payload = HEX_PREFIX,
     amount = 0,
     joule = 0
-  ): Promise<E.Either<string, Error>> {
-    const result = await this.accountLock.withLock<E.Either<string, Error>>(
+  ): ResultAsync<string, Error> {
+    return this.accountLock.withLock<string>(
       chainId,
       credentials.getAccountAddress(),
       async () => {
-        const cachedResult = await this.blockCache.getBlock(
+        const block = await this.blockCache.getBlock(
           chainId,
           credentials.getAccountAddress(),
           async (chainId, address) => {
             return await this.httpClient.getLatestBlock(chainId, address);
           }
         );
-        if (E.isRight(cachedResult)) {
-          return E.right(cachedResult.right);
-        }
 
-        const block = cachedResult.left;
         const tx = TransactionBuilder.builder(TransactionTypes.CallContract)
           .setBlock(block)
           .setOwner(credentials.getAccountAddress())
@@ -422,10 +434,20 @@ class LatticeClient {
           Buffer.from(code.startsWith(HEX_PREFIX) ? code.slice(2) : code, "hex")
         );
         tx.codeHash = `0x${codeHash.toString("hex")}`;
-        return await this.handleTransaction(chainId, credentials, tx, block);
+
+        return await this.handleTransaction(
+          chainId,
+          credentials,
+          tx,
+          block
+        ).match(
+          (hash) => hash,
+          (error) => {
+            throw error;
+          }
+        );
       }
     );
-    return result;
   }
 
   /**
@@ -439,7 +461,7 @@ class LatticeClient {
    * @param joule The joule, default is 0
    * @returns E.Either<Receipt, Error>, left is the receipt, right is the error
    */
-  async callContractWaitReceipt(
+  callContractWaitReceipt(
     credentials: Credentials,
     chainId: number,
     contractAddress: string,
@@ -449,8 +471,8 @@ class LatticeClient {
     joule = 0,
     retryStrategy: RetryStrategy = FixedDelayStrategy.default,
     retries = 10
-  ): Promise<E.Either<Receipt, Error>> {
-    const result = await this.callContract(
+  ): ResultAsync<Receipt, Error> {
+    return this.callContract(
       credentials,
       chainId,
       contractAddress,
@@ -458,13 +480,9 @@ class LatticeClient {
       payload,
       amount,
       joule
-    );
-    if (E.isRight(result)) {
-      return E.right(result.right);
-    }
-
-    const hash = result.left;
-    return await this.waitReceipt(chainId, hash, retryStrategy, retries);
+    ).andThen((hash) => {
+      return this.waitReceipt(chainId, hash, retryStrategy, retries);
+    });
   }
 }
 

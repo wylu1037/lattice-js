@@ -1,5 +1,6 @@
 import { log } from "@/logger";
 import { Mutex } from "@/utils/index";
+import { ResultAsync } from "neverthrow";
 
 /**
  * Account lock interface
@@ -30,7 +31,7 @@ export interface AccountLock {
     chainId: string | number,
     address: string,
     block: () => Promise<T>
-  ): Promise<T>;
+  ): ResultAsync<T, Error>;
 }
 
 /**
@@ -50,8 +51,9 @@ export class AccountLockImpl implements AccountLock {
 
     const lock = this.locks.get(key);
     if (lock) {
-      const release = await lock.obtain();
-      this.lockReleases.set(key, release);
+      await lock.obtain().then((release) => {
+        this.lockReleases.set(key, release);
+      });
     }
   }
 
@@ -66,17 +68,18 @@ export class AccountLockImpl implements AccountLock {
     }
   }
 
-  async withLock<T>(
+  withLock<T>(
     chainId: string | number,
     address: string,
     block: () => Promise<T>
-  ): Promise<T> {
-    await this.obtain(chainId, address);
-    try {
-      return await block();
-    } finally {
-      this.unlock(chainId, address);
-    }
+  ): ResultAsync<T, Error> {
+    return ResultAsync.fromSafePromise(
+      this.obtain(chainId, address).then(async () => {
+        return await block().finally(() => {
+          this.unlock(chainId, address);
+        });
+      })
+    );
   }
 }
 
