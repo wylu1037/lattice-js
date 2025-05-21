@@ -1,6 +1,5 @@
 import { log } from "@/logger";
-
-const retry = require("async-retry");
+import { RetryStatus, retryAsync } from "@/utils/index";
 
 /**
  * RetryStrategy
@@ -100,33 +99,52 @@ class RetryHandler<T> {
     private onRetry?: (error: Error, attempt: number) => void // Retry callback
   ) {}
 
+  /**
+   * Execute the async function and retry according to the strategy
+   * @param fn The async function to execute
+   * @returns The result of the async function
+   */
   async execute(fn: () => Promise<T>): Promise<T> {
-    return retry(
-      async (bail: (error: Error) => void, attempt: number) => {
-        try {
-          return await fn();
-        } catch (error) {
-          if (error instanceof Error) {
-            // Exit early for specific errors
-            if (error.message.includes("Bad request")) {
-              bail(error);
-              return;
-            }
-          }
-          throw error;
-        }
-      },
-      {
-        retries: this.retries,
-        onRetry: (error: Error, attempt: number) => {
-          const nextDelay = this.strategy.getDelay(attempt + 1);
-          log.warn(
-            `Retry attempt #${attempt}, next delay: ${nextDelay}ms, error: ${error.message}`
-          );
-          this.onRetry?.(error, attempt);
-        }
+    const delayFn = (status: RetryStatus) => {
+      const nextDelay = this.strategy.getDelay(status.index + 1);
+      if (status.error) {
+        this.onRetry?.(status.error, status.index);
       }
-    );
+
+      return nextDelay;
+    };
+
+    const retryFn = (status: RetryStatus) => {
+      if (status.index >= this.retries) {
+        return false;
+      }
+
+      if (
+        status.error &&
+        status.error instanceof Error &&
+        status.error.message.includes("Bad request")
+      ) {
+        return false;
+      }
+
+      return true;
+    };
+
+    const errorFn = (status: RetryStatus) => {
+      if (status.error) {
+        log.error(
+          `Retry failed after attempt #${status.index}, duration: ${status.duration}ms, error: ${status.error.message}`
+        );
+      }
+    };
+
+    const wrappedFn = (_: RetryStatus) => fn();
+
+    return retryAsync(wrappedFn, {
+      retry: retryFn,
+      delay: delayFn,
+      error: errorFn
+    });
   }
 }
 

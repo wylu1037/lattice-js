@@ -1,6 +1,6 @@
 {
   "name": "@zlattice/lattice-js",
-  "version": "1.0.2-beta.7",
+  "version": "1.0.2-beta.8",
   "description": "",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -43,7 +43,6 @@
     "@noble/ciphers": "^1.3.0",
     "@noble/curves": "^1.9.0",
     "@noble/hashes": "^1.8.0",
-    "async-retry": "^1.3.3",
     "axios": "^1.8.4",
     "cacheable": "^1.9.0",
     "ethereum-cryptography": "^3.0.0",
