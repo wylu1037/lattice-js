@@ -1,17 +1,15 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-  randomUUID,
-  scryptSync
-} from "node:crypto";
 import { type Curve, Curves, HEX_PREFIX } from "@/common/constants";
 import { newCrypto } from "@/crypto";
+import { hexlify } from "@ethersproject/bytes";
+import { scrypt } from "@noble/hashes/scrypt";
+import { randomBytes } from "@noble/hashes/utils";
+import * as CryptoJS from "crypto-js";
 import { Result, err, ok } from "neverthrow";
+import { v4 as uuidv4 } from "uuid";
 
 const AES_128_CTR = "aes-128-ctr";
 const KDF_SCRYPT = "scrypt";
-const SCRYPT_N = 1 << 12; // 1<<18 = 262144，CPU/内存成本因子，控制计算和内存的使用量。
+const SCRYPT_N = 1 << 18; // 1<<18 = 262144，CPU/内存成本因子，控制计算和内存的使用量。
 const SCRYPT_P = 1; // 1，并行度因子，控制 scrypt 函数的并行度。
 const SCRYPT_R = 8; // 8，块大小因子，影响内部工作状态和内存占用。
 const SCRYPT_KEY_LEN = 32; // 32，生成的密钥长度，单位byte
@@ -24,6 +22,36 @@ class FileKey {
     public readonly cipher: Cipher,
     public readonly isGm: boolean
   ) {}
+
+  static fromJson(json: string): Result<FileKey, Error> {
+    try {
+      const data = JSON.parse(json);
+      return ok(
+        new FileKey(
+          data.uuid,
+          data.address,
+          new Cipher(
+            new Aes(data.cipher.aes.cipher, data.cipher.aes.iv),
+            new Kdf(
+              data.cipher.kdf.kdf,
+              new KdfParams(
+                data.cipher.kdf.kdfParams.DkLen,
+                data.cipher.kdf.kdfParams.n,
+                data.cipher.kdf.kdfParams.p,
+                data.cipher.kdf.kdfParams.r,
+                data.cipher.kdf.kdfParams.salt
+              )
+            ),
+            data.cipher.cipherText,
+            data.cipher.mac
+          ),
+          data.isGM
+        )
+      );
+    } catch (error) {
+      return err(new Error("Invalid file key"));
+    }
+  }
 }
 
 class Cipher {
@@ -59,6 +87,13 @@ class KdfParams {
   ) {}
 }
 
+/**
+ * Generate file key
+ * @param privateKey - The private key
+ * @param passphrase - The passphrase
+ * @param curve - The curve
+ * @returns The file key
+ */
 function generateFileKey(
   privateKey: string,
   passphrase: string,
@@ -68,7 +103,7 @@ function generateFileKey(
   const address = crypto.publicKeyToAddress(
     crypto.getPublicKeyFromPrivateKey(privateKey)
   );
-  const uuid = randomUUID();
+  const uuid = uuidv4();
   const generateCipherResult = generateCipher(privateKey, passphrase, curve);
   if (generateCipherResult.isErr()) {
     return err(generateCipherResult.error);
@@ -83,19 +118,62 @@ function generateFileKey(
   );
 }
 
+/**
+ * Decrypt file key
+ * @param fileKey - The file key
+ * @param passphrase - The passphrase
+ * @returns The private key
+ */
+function decryptFileKey(
+  fileKey: FileKey | string,
+  passphrase: string
+): Result<string, Error> {
+  const result =
+    typeof fileKey === "string" ? FileKey.fromJson(fileKey) : ok(fileKey);
+  if (result.isErr()) {
+    return err(result.error);
+  }
+  const fk = result.value;
+
+  const salt = Buffer.from(fk.cipher.kdf.kdfParams.salt, "hex");
+  const key = scryptKey(passphrase, salt, SCRYPT_N);
+  const aesKey = key.subarray(0, AES_BLOCK_SIZE);
+  const hashKey = key.subarray(AES_BLOCK_SIZE, AES_BLOCK_SIZE * 2); // compact amc
+  const cipher = Buffer.from(fk.cipher.cipherText, "hex");
+
+  const curve = fk.isGm ? Curves.Sm2p256v1 : Curves.Secp256k1;
+  const actualMac = newCrypto(curve).hash(Buffer.concat([hashKey, cipher]));
+  const expectedMac = Buffer.from(fk.cipher.mac, "hex");
+
+  if (actualMac.toString("hex") !== expectedMac.toString("hex")) {
+    return err(new Error("根据密码无法解析出私钥，请检查密码"));
+  }
+
+  const iv = Buffer.from(fk.cipher.aes.iv, "hex");
+  const privateKey = aesCtrDecrypt(aesKey, iv, cipher);
+  return ok(hexlify(privateKey));
+}
+
+/**
+ * Generate cipher
+ * @param privateKey - The private key
+ * @param passphrase - The passphrase
+ * @param curve - The curve
+ * @returns The cipher
+ */
 function generateCipher(
   privateKey: string,
   passphrase: string,
   curve: Curve
 ): Result<Cipher, Error> {
   // generate salt
-  const salt = randomBytes(32);
+  const salt = Buffer.from(randomBytes(32));
   const key = scryptKey(passphrase, salt, SCRYPT_N);
   const aesKey = key.subarray(0, AES_BLOCK_SIZE);
   const hashKey = key.subarray(AES_BLOCK_SIZE, AES_BLOCK_SIZE * 2); // compact amc
 
-  const ivBytes = randomBytes(AES_BLOCK_SIZE);
-  const cipher = aes128Ctr(
+  const ivBytes = Buffer.from(randomBytes(AES_BLOCK_SIZE));
+  const cipher = aesCtrEncrypt(
     aesKey,
     ivBytes,
     Buffer.from(
@@ -120,24 +198,64 @@ function generateCipher(
   );
 }
 
+/**
+ * Scrypt key
+ * @param password - The password
+ * @param salt - The salt
+ * @param n - The n
+ * @returns The derived key
+ */
 function scryptKey(password: string, salt: Buffer, n: number): Buffer {
-  const derivedKey = scryptSync(password, salt, SCRYPT_KEY_LEN, {
+  const derivedKey = scrypt(password, salt, {
     N: n,
+    r: SCRYPT_R,
     p: SCRYPT_P,
-    r: SCRYPT_R
+    dkLen: SCRYPT_KEY_LEN
   });
 
-  return derivedKey;
+  return Buffer.from(derivedKey);
 }
 
-function aes128Ctr(key: Buffer, iv: Buffer, secret: Buffer): Buffer {
-  const cipher = createCipheriv(AES_128_CTR, key, iv);
-  return Buffer.concat([cipher.update(secret), cipher.final()]);
+/**
+ * AES-CTR encrypt
+ * @param key - The key
+ * @param iv - The iv
+ * @param message - The message
+ * @returns The encrypted buffer
+ */
+function aesCtrEncrypt(key: Buffer, iv: Buffer, message: Buffer): Buffer {
+  const encrypted = CryptoJS.AES.encrypt(
+    CryptoJS.enc.Hex.parse(message.toString("hex")),
+    CryptoJS.enc.Hex.parse(key.toString("hex")),
+    {
+      iv: CryptoJS.enc.Hex.parse(iv.toString("hex")),
+      mode: CryptoJS.mode.CTR,
+      padding: CryptoJS.pad.NoPadding // no padding
+    }
+  );
+  return Buffer.from(encrypted.ciphertext.toString(CryptoJS.enc.Hex), "hex");
 }
 
-function aes128CtrDecrypt(secret: Buffer, iv: Buffer): Buffer {
-  const decipher = createDecipheriv(AES_128_CTR, secret, iv);
-  return Buffer.concat([decipher.update(secret), decipher.final()]);
+/**
+ * AES-CTR decrypt
+ * @param key - The key
+ * @param iv - The iv
+ * @param cipher - The cipher
+ * @returns The decrypted buffer
+ */
+function aesCtrDecrypt(key: Buffer, iv: Buffer, cipher: Buffer): Buffer {
+  const decrypted = CryptoJS.AES.decrypt(
+    CryptoJS.lib.CipherParams.create({
+      ciphertext: CryptoJS.enc.Hex.parse(cipher.toString("hex"))
+    }),
+    CryptoJS.enc.Hex.parse(key.toString("hex")),
+    {
+      iv: CryptoJS.enc.Hex.parse(iv.toString("hex")),
+      mode: CryptoJS.mode.CTR,
+      padding: CryptoJS.pad.NoPadding // no padding
+    }
+  );
+  return Buffer.from(decrypted.toString(CryptoJS.enc.Hex), "hex");
 }
 
 export {
@@ -156,6 +274,7 @@ export {
   KdfParams,
   // Functions
   generateCipher,
-  generateFileKey
+  generateFileKey,
+  decryptFileKey
 };
 
