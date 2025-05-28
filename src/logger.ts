@@ -27,14 +27,16 @@ let logger: Logger = pino(
 );
 
 // Initialize or reconfigure logger
-export function configureLogger(options?: LoggerOptions | pino.DestinationStream): Logger {
-logger = pino({ ...defaultOptions, ...options });
-return logger;
+export function configureLogger(
+  options?: LoggerOptions | pino.DestinationStream
+): Logger {
+  logger = pino({ ...defaultOptions, ...options });
+  return logger;
 }
 
 // Get current logger instance
 export function getLogger(): Logger {
-return logger;
+  return logger;
 }
 
 // Shortcut logging methods
@@ -49,5 +51,5 @@ export const log = {
 
 // Create child logger (supports context)
 export function createChildLogger(context: Record<string, any>): Logger {
-return logger.child(context);
+  return logger.child(context);
 }

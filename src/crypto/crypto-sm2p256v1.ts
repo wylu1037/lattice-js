@@ -12,6 +12,7 @@ import {
 import sm3 from "@/crypto/sm3";
 import {log} from "@/logger";
 import {Base58Impl, type Base58Interface} from "@/utils/base58";
+import { isHexString } from "@ethersproject/bytes";
 import type {CryptoService} from "./crypto";
 import type { EncodeFunc } from "./crypto";
 
@@ -64,6 +65,20 @@ export class GM implements CryptoService {
       ADDRESS_VERSION
     );
     return `${ADDRESS_TITLE}_${address}`;
+  }
+
+  getPublicKeyFromPrivateKey(privateKey: string): string {
+    if (!isHexString(privateKey)) {
+      throw new Error(
+        `Invalid private key, expected size is 32, but actual size is ${privateKey.length}`
+      );
+    }
+
+    return getPublicKeyFromPrivateKey(
+      privateKey.startsWith(HEX_PREFIX)
+        ? privateKey.slice(HEX_PREFIX.length)
+        : privateKey
+    );
   }
 
   hash(data: Buffer): Buffer {

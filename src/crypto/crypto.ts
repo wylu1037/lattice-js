@@ -52,6 +52,13 @@ export interface CryptoService {
   publicKeyToAddress(publicKey: Buffer | string): string;
 
   /**
+   * Get the public key from the private key
+   * @param privateKey - The private key, the length is 32 bytes
+   * @returns The public key, the length is 65 bytes
+   */
+  getPublicKeyFromPrivateKey(privateKey: string): string;
+
+  /**
    * Hash the data
    * @param data - The data to hash
    * @returns The hash bytes

@@ -60,6 +60,10 @@ export class NIST implements CryptoService {
     return "";
   }
 
+  getPublicKeyFromPrivateKey(privateKey: string): string {
+    return "";
+  }
+
   hash(data: Buffer): Buffer {
     return Buffer.from("01", "hex");
   }
