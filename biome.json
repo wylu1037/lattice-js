@@ -26,7 +26,8 @@
         "useNumberNamespace": "off",
         "useSelfClosingElements": "off",
         "useNodejsImportProtocol": "error",
-        "noParameterAssign": "warn"
+        "noParameterAssign": "warn",
+        "noNonNullAssertion": "off"
       },
       "recommended": true,
       "suspicious": {

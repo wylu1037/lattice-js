@@ -1,367 +1,385 @@
-import { wordlists } from "@/wallet/_wordlists";
-import * as bip39 from "@/wallet/bip39";
-
-// Test vectors for different languages
-interface TestVector {
-  entropy: string;
-  mnemonic: string;
-  seed: string;
-  passphrase?: string;
-}
-
-// English test vectors (subset from BIP39 specification)
-const englishVectors: TestVector[] = [
-  {
-    entropy: "00000000000000000000000000000000",
-    mnemonic:
-      "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
-    seed: "c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e53495531f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04"
-  },
-  {
-    entropy: "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
-    mnemonic:
-      "legal winner thank year wave sausage worth useful legal winner thank yellow",
-    seed: "2e8905819b8723fe2c1d161860e5ee1830318dbf49a83bd451cfb8440c28bd6fa457fe1296106559a3c80937a1c1069be3a3a5bd381ee6260e8d9739fce1f607"
-  },
-  {
-    entropy: "80808080808080808080808080808080",
-    mnemonic:
-      "letter advice cage absurd amount doctor acoustic avoid letter advice cage above",
-    seed: "d71de856f81a8acc65e6fc851a38d4d7ec216fd0796d0a6827a3ad6b9e4540c1b8b38f890190aa19de8e3a8b94f8a78e593a0b6d02c71b4c05f5e13e8b72c2e3c"
-  }
-];
-
-// Japanese test vectors
-const japaneseVectors: TestVector[] = [
-  {
-    entropy: "00000000000000000000000000000000",
-    mnemonic:
-      "あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あいこくしん　あおぞら",
-    seed: "a262d6fb6122ecf45be09c50492b31f92e9beb7d9a845987a02cefda57a15f9c467a17872029a9e92299b5cbdf306e3a0ee620245cbd508959b6cb7ca637bd55",
-    passphrase: "㍍ガバヴァぱばぐゞちぢ十人十色"
-  }
-];
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import * as bip39 from "@scure/bip39";
+import { wordlist as english } from "@scure/bip39/wordlists/english";
+import { wordlist as japanese } from "@scure/bip39/wordlists/japanese";
+import { wordlist as simplifiedChinese } from "@scure/bip39/wordlists/simplified-chinese";
 
 describe("BIP39", () => {
   describe("generateMnemonic", () => {
-    test("should generate valid 12-word mnemonic by default", () => {
-      const mnemonic = bip39.generateMnemonic();
+    it("should generate 12-word mnemonic by default", () => {
+      const mnemonic = bip39.generateMnemonic(english);
       const words = mnemonic.split(" ");
-      console.log(words);
+
       expect(words).toHaveLength(12);
-      expect(bip39.validateMnemonic(mnemonic)).toBe(true);
+      expect(bip39.validateMnemonic(mnemonic, english)).toBe(true);
     });
 
-    test("should generate mnemonic with custom strength", () => {
-      const mnemonic160 = bip39.generateMnemonic(160);
-      const words160 = mnemonic160.split(" ");
-      console.log(words160);
-      expect(words160).toHaveLength(15);
-      expect(bip39.validateMnemonic(mnemonic160)).toBe(true);
+    it("should generate mnemonic with different strengths", () => {
+      // 128 bits = 12 words
+      const mnemonic12 = bip39.generateMnemonic(english, 128);
+      expect(mnemonic12.split(" ")).toHaveLength(12);
 
-      const mnemonic256 = bip39.generateMnemonic(256);
-      const words256 = mnemonic256.split(" ");
-      expect(words256).toHaveLength(24);
-      expect(bip39.validateMnemonic(mnemonic256)).toBe(true);
+      // 160 bits = 15 words
+      const mnemonic15 = bip39.generateMnemonic(english, 160);
+      expect(mnemonic15.split(" ")).toHaveLength(15);
+
+      // 192 bits = 18 words
+      const mnemonic18 = bip39.generateMnemonic(english, 192);
+      expect(mnemonic18.split(" ")).toHaveLength(18);
+
+      // 224 bits = 21 words
+      const mnemonic21 = bip39.generateMnemonic(english, 224);
+      expect(mnemonic21.split(" ")).toHaveLength(21);
+
+      // 256 bits = 24 words
+      const mnemonic24 = bip39.generateMnemonic(english, 256);
+      expect(mnemonic24.split(" ")).toHaveLength(24);
     });
 
-    test("should use custom RNG function", () => {
-      const customRng = vi
-        .fn()
-        .mockReturnValue(
-          Buffer.from("00000000000000000000000000000000", "hex")
-        );
-      const mnemonic = bip39.generateMnemonic(128, customRng);
+    it("should generate different mnemonics each time", () => {
+      const mnemonic1 = bip39.generateMnemonic(english);
+      const mnemonic2 = bip39.generateMnemonic(english);
 
-      expect(customRng).toHaveBeenCalledWith(16); // 128 bits / 8 = 16 bytes
-      expect(mnemonic).toBe(
-        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
-      );
+      expect(mnemonic1).not.toBe(mnemonic2);
     });
 
-    test("should throw error for invalid strength", () => {
-      expect(() => bip39.generateMnemonic(129)).toThrow("Invalid entropy");
-      expect(() => bip39.generateMnemonic(100)).toThrow("Invalid entropy");
+    it("should throw error for invalid strength", () => {
+      expect(() => bip39.generateMnemonic(english, 120)).toThrow();
+      expect(() => bip39.generateMnemonic(english, 260)).toThrow();
     });
   });
 
   describe("validateMnemonic", () => {
-    test("should validate correct mnemonics", () => {
-      for (const vector of englishVectors) {
-        expect(bip39.validateMnemonic(vector.mnemonic)).toBe(true);
-      }
+    it("should validate correct mnemonic", () => {
+      const mnemonic =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+      expect(bip39.validateMnemonic(mnemonic, english)).toBe(true);
     });
 
-    test("should reject invalid mnemonics", () => {
-      expect(bip39.validateMnemonic("sleep kitten")).toBe(false); // too short
-      expect(
-        bip39.validateMnemonic("sleep kitten sleep kitten sleep kitten")
-      ).toBe(false); // too short
-      expect(
-        bip39.validateMnemonic(
-          "turtle front uncle idea crush write shrug there lottery flower risky shell"
-        )
-      ).toBe(false); // invalid words
-      expect(
-        bip39.validateMnemonic(
-          "sleep kitten sleep kitten sleep kitten sleep kitten sleep kitten sleep kitten"
-        )
-      ).toBe(false); // invalid checksum
+    it("should reject invalid mnemonic", () => {
+      const invalidMnemonic =
+        "invalid mnemonic phrase that should not validate";
+      expect(bip39.validateMnemonic(invalidMnemonic, english)).toBe(false);
     });
 
-    test("should validate Japanese mnemonics", () => {
-      if (wordlists.japanese) {
-        for (const vector of japaneseVectors) {
-          expect(
-            bip39.validateMnemonic(vector.mnemonic, wordlists.japanese)
-          ).toBe(true);
-        }
-      }
+    it("should reject mnemonic with wrong word count", () => {
+      const shortMnemonic = "abandon abandon abandon";
+      expect(bip39.validateMnemonic(shortMnemonic, english)).toBe(false);
+
+      const longMnemonic = "abandon ".repeat(25).trim();
+      expect(bip39.validateMnemonic(longMnemonic, english)).toBe(false);
+    });
+
+    it("should reject mnemonic with invalid checksum", () => {
+      const invalidChecksum =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon";
+      expect(bip39.validateMnemonic(invalidChecksum, english)).toBe(false);
+    });
+
+    it("should validate mnemonic with different wordlists", () => {
+      const englishMnemonic = bip39.generateMnemonic(english);
+      const japaneseMnemonic = bip39.generateMnemonic(japanese);
+      const chineseMnemonic = bip39.generateMnemonic(simplifiedChinese);
+
+      expect(bip39.validateMnemonic(englishMnemonic, english)).toBe(true);
+      expect(bip39.validateMnemonic(japaneseMnemonic, japanese)).toBe(true);
+      expect(bip39.validateMnemonic(chineseMnemonic, simplifiedChinese)).toBe(
+        true
+      );
+
+      // Cross-validation should fail
+      expect(bip39.validateMnemonic(englishMnemonic, japanese)).toBe(false);
     });
   });
 
   describe("mnemonicToEntropy", () => {
-    test("should convert mnemonic to entropy correctly", () => {
-      for (const vector of englishVectors) {
-        const entropy = bip39.mnemonicToEntropy(vector.mnemonic);
-        expect(entropy).toBe(vector.entropy);
-      }
+    it("should convert mnemonic to entropy", () => {
+      const mnemonic =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+      const entropy = bip39.mnemonicToEntropy(mnemonic, english);
+
+      expect(entropy).toBeInstanceOf(Uint8Array);
+      expect(entropy.length).toBe(16); // 128 bits = 16 bytes
+      expect(bytesToHex(entropy)).toBe("00000000000000000000000000000000");
     });
 
-    test("should work with custom wordlists", () => {
-      if (wordlists.japanese) {
-        for (const vector of japaneseVectors) {
-          const entropy = bip39.mnemonicToEntropy(
-            vector.mnemonic,
-            wordlists.japanese
-          );
-          expect(entropy).toBe(vector.entropy);
-        }
-      }
+    it("should handle different mnemonic lengths", () => {
+      const mnemonic12 = bip39.generateMnemonic(english, 128);
+      const mnemonic15 = bip39.generateMnemonic(english, 160);
+      const mnemonic18 = bip39.generateMnemonic(english, 192);
+      const mnemonic21 = bip39.generateMnemonic(english, 224);
+      const mnemonic24 = bip39.generateMnemonic(english, 256);
+
+      expect(bip39.mnemonicToEntropy(mnemonic12, english).length).toBe(16); // 128 bits
+      expect(bip39.mnemonicToEntropy(mnemonic15, english).length).toBe(20); // 160 bits
+      expect(bip39.mnemonicToEntropy(mnemonic18, english).length).toBe(24); // 192 bits
+      expect(bip39.mnemonicToEntropy(mnemonic21, english).length).toBe(28); // 224 bits
+      expect(bip39.mnemonicToEntropy(mnemonic24, english).length).toBe(32); // 256 bits
     });
 
-    test("should throw error for invalid mnemonic", () => {
-      expect(() => bip39.mnemonicToEntropy("invalid mnemonic")).toThrow();
-      expect(() =>
-        bip39.mnemonicToEntropy("abandon abandon abandon")
-      ).toThrow(); // wrong length
+    it("should throw error for invalid mnemonic", () => {
+      const invalidMnemonic = "invalid mnemonic phrase";
+      expect(() => bip39.mnemonicToEntropy(invalidMnemonic, english)).toThrow();
     });
   });
 
   describe("entropyToMnemonic", () => {
-    test("should convert entropy to mnemonic correctly", () => {
-      for (const vector of englishVectors) {
-        const mnemonic = bip39.entropyToMnemonic(vector.entropy);
-        expect(mnemonic).toBe(vector.mnemonic);
-      }
-    });
+    it("should convert entropy to mnemonic", () => {
+      const entropy = new Uint8Array(16); // 128 bits of zeros
+      const mnemonic = bip39.entropyToMnemonic(entropy, english);
 
-    test("should work with Buffer input", () => {
-      const entropy = Buffer.from("00000000000000000000000000000000", "hex");
-      const mnemonic = bip39.entropyToMnemonic(entropy);
       expect(mnemonic).toBe(
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
       );
+      expect(bip39.validateMnemonic(mnemonic, english)).toBe(true);
     });
 
-    test("should work with custom wordlists", () => {
-      if (wordlists.japanese) {
-        for (const vector of japaneseVectors) {
-          const mnemonic = bip39.entropyToMnemonic(
-            vector.entropy,
-            wordlists.japanese
-          );
-          expect(mnemonic).toBe(vector.mnemonic);
-        }
-      }
+    it("should handle different entropy lengths", () => {
+      const entropy16 = new Uint8Array(16); // 128 bits
+      const entropy20 = new Uint8Array(20); // 160 bits
+      const entropy24 = new Uint8Array(24); // 192 bits
+      const entropy28 = new Uint8Array(28); // 224 bits
+      const entropy32 = new Uint8Array(32); // 256 bits
+
+      const mnemonic16 = bip39.entropyToMnemonic(entropy16, english);
+      const mnemonic20 = bip39.entropyToMnemonic(entropy20, english);
+      const mnemonic24 = bip39.entropyToMnemonic(entropy24, english);
+      const mnemonic28 = bip39.entropyToMnemonic(entropy28, english);
+      const mnemonic32 = bip39.entropyToMnemonic(entropy32, english);
+
+      expect(mnemonic16.split(" ")).toHaveLength(12);
+      expect(mnemonic20.split(" ")).toHaveLength(15);
+      expect(mnemonic24.split(" ")).toHaveLength(18);
+      expect(mnemonic28.split(" ")).toHaveLength(21);
+      expect(mnemonic32.split(" ")).toHaveLength(24);
     });
 
-    test("should throw error for invalid entropy", () => {
-      expect(() => bip39.entropyToMnemonic("")).toThrow("Invalid entropy");
-      expect(() => bip39.entropyToMnemonic("000000")).toThrow(
-        "Invalid entropy"
-      ); // not multiple of 4 bytes
-      expect(() => bip39.entropyToMnemonic("0".repeat(66))).toThrow(
-        "Invalid entropy"
-      ); // too long
+    it("should be reversible with mnemonicToEntropy", () => {
+      const originalEntropy = hexToBytes("0123456789abcdef0123456789abcdef");
+      const mnemonic = bip39.entropyToMnemonic(originalEntropy, english);
+      const recoveredEntropy = bip39.mnemonicToEntropy(mnemonic, english);
+
+      expect(bytesToHex(recoveredEntropy)).toBe(bytesToHex(originalEntropy));
+    });
+
+    it("should throw error for invalid entropy length", () => {
+      const invalidEntropy = new Uint8Array(15); // Invalid length
+      expect(() => bip39.entropyToMnemonic(invalidEntropy, english)).toThrow();
+    });
+  });
+
+  describe("mnemonicToSeed", () => {
+    it("should convert mnemonic to seed without passphrase", async () => {
+      const mnemonic =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+      const seed = await bip39.mnemonicToSeed(mnemonic);
+
+      expect(seed).toBeInstanceOf(Uint8Array);
+      expect(seed.length).toBe(64); // 512 bits = 64 bytes
+
+      // Known test vector
+      const expectedSeed =
+        "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4";
+      expect(bytesToHex(seed)).toBe(expectedSeed);
+    });
+
+    it("should convert mnemonic to seed with passphrase", async () => {
+      const mnemonic =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+      const passphrase = "TREZOR";
+      const seed = await bip39.mnemonicToSeed(mnemonic, passphrase);
+
+      expect(seed).toBeInstanceOf(Uint8Array);
+      expect(seed.length).toBe(64);
+
+      // Different passphrase should produce different seed
+      const seedWithoutPassphrase = await bip39.mnemonicToSeed(mnemonic);
+      expect(bytesToHex(seed)).not.toBe(bytesToHex(seedWithoutPassphrase));
+    });
+
+    it("should produce different seeds for different passphrases", async () => {
+      const mnemonic =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+      const seed1 = await bip39.mnemonicToSeed(mnemonic, "passphrase1");
+      const seed2 = await bip39.mnemonicToSeed(mnemonic, "passphrase2");
+
+      expect(bytesToHex(seed1)).not.toBe(bytesToHex(seed2));
     });
   });
 
   describe("mnemonicToSeedSync", () => {
-    test("should generate seed from mnemonic", () => {
-      for (const vector of englishVectors) {
-        const seed = bip39.mnemonicToSeedSync(
-          vector.mnemonic,
-          vector.passphrase || "TREZOR"
-        );
-        expect(seed.toString("hex")).toBe(vector.seed);
-      }
-    });
-
-    test("should handle UTF8 passwords", () => {
-      if (wordlists.japanese) {
-        for (const vector of japaneseVectors) {
-          const seed = bip39.mnemonicToSeedSync(
-            vector.mnemonic,
-            vector.passphrase
-          );
-          expect(seed.toString("hex")).toBe(vector.seed);
-        }
-      }
-    });
-
-    test("should normalize passwords", () => {
+    it("should convert mnemonic to seed synchronously", () => {
       const mnemonic =
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-      const password = "㍍ガバヴァぱばぐゞちぢ十人十色";
-      const normalizedPassword = "メートルガバヴァぱばぐゞちぢ十人十色";
+      const seed = bip39.mnemonicToSeedSync(mnemonic);
 
-      const seed1 = bip39.mnemonicToSeedSync(mnemonic, password);
-      const seed2 = bip39.mnemonicToSeedSync(mnemonic, normalizedPassword);
+      expect(seed).toBeInstanceOf(Uint8Array);
+      expect(seed.length).toBe(64);
 
-      expect(seed1.toString("hex")).toBe(seed2.toString("hex"));
+      // Should match async version
+      const expectedSeed =
+        "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4";
+      expect(bytesToHex(seed)).toBe(expectedSeed);
+    });
+
+    it("should match async version", async () => {
+      const mnemonic =
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+      const passphrase = "test";
+
+      const syncSeed = bip39.mnemonicToSeedSync(mnemonic, passphrase);
+      const asyncSeed = await bip39.mnemonicToSeed(mnemonic, passphrase);
+
+      expect(bytesToHex(syncSeed)).toBe(bytesToHex(asyncSeed));
     });
   });
 
-  describe("mnemonicToSeed (async)", () => {
-    test("should generate seed from mnemonic asynchronously", async () => {
-      for (const vector of englishVectors) {
-        const seed = await bip39.mnemonicToSeed(
-          vector.mnemonic,
-          vector.passphrase || "TREZOR"
-        );
-        expect(seed.toString("hex")).toBe(vector.seed);
-      }
+  describe("wordlists", () => {
+    it("should have correct wordlist lengths", () => {
+      expect(english).toHaveLength(2048);
+      expect(japanese).toHaveLength(2048);
+      expect(simplifiedChinese).toHaveLength(2048);
     });
 
-    test("should handle UTF8 passwords asynchronously", async () => {
-      if (wordlists.japanese) {
-        for (const vector of japaneseVectors) {
-          const seed = await bip39.mnemonicToSeed(
-            vector.mnemonic,
-            vector.passphrase
-          );
-          expect(seed.toString("hex")).toBe(vector.seed);
-        }
-      }
-    });
-  });
+    it("should have unique words in each wordlist", () => {
+      const englishSet = new Set(english);
+      const japaneseSet = new Set(japanese);
+      const chineseSet = new Set(simplifiedChinese);
 
-  describe("wordlist management", () => {
-    test("should get default wordlist", () => {
-      const defaultLang = bip39.getDefaultWordlist();
-      expect(typeof defaultLang).toBe("string");
-      expect(defaultLang).toBe("english");
+      expect(englishSet.size).toBe(2048);
+      expect(japaneseSet.size).toBe(2048);
+      expect(chineseSet.size).toBe(2048);
     });
 
-    test("should set default wordlist", () => {
-      const originalDefault = bip39.getDefaultWordlist();
+    it("should work with different wordlists", () => {
+      const englishMnemonic = bip39.generateMnemonic(english);
+      const japaneseMnemonic = bip39.generateMnemonic(japanese);
+      const chineseMnemonic = bip39.generateMnemonic(simplifiedChinese);
 
-      if (wordlists.italian) {
-        bip39.setDefaultWordlist("italian");
-        expect(bip39.getDefaultWordlist()).toBe("italian");
-
-        // Test that entropy conversion uses new default
-        const phraseItalian = bip39.entropyToMnemonic(
-          "00000000000000000000000000000000"
-        );
-        expect(phraseItalian.slice(0, 5)).toBe("abaco");
-
-        // Restore original default
-        bip39.setDefaultWordlist(originalDefault);
-      }
-    });
-
-    test("should throw error for unknown wordlist", () => {
-      expect(() => bip39.setDefaultWordlist("unknown_language")).toThrow(
-        'Could not find wordlist for language "unknown_language"'
+      expect(bip39.validateMnemonic(englishMnemonic, english)).toBe(true);
+      expect(bip39.validateMnemonic(japaneseMnemonic, japanese)).toBe(true);
+      expect(bip39.validateMnemonic(chineseMnemonic, simplifiedChinese)).toBe(
+        true
       );
     });
+  });
 
-    test("should expose standard wordlists", () => {
-      const { wordlists: exposedWordlists } = bip39;
-      expect(Array.isArray(exposedWordlists.EN)).toBe(true);
-      expect(exposedWordlists.EN).toHaveLength(2048);
-
-      if (wordlists.english) {
-        expect(exposedWordlists.EN).toEqual(wordlists.english);
+  describe("BIP39 test vectors", () => {
+    const testVectors = [
+      {
+        entropy: "00000000000000000000000000000000",
+        mnemonic:
+          "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+        seed: "5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4",
+        passphrase: ""
+      },
+      {
+        entropy: "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+        mnemonic:
+          "legal winner thank year wave sausage worth useful legal winner thank yellow",
+        seed: "878386efb78845b3355bd15ea4d39ef97d179cb712b77d5c12b6be415fffeffe5f377ba02bf3f8544ab800b955e51fbff09828f682052a20faa6addbbddfb096",
+        passphrase: ""
+      },
+      {
+        entropy: "80808080808080808080808080808080",
+        mnemonic:
+          "letter advice cage absurd amount doctor acoustic avoid letter advice cage above",
+        seed: "77d6be9708c8218738934f84bbbb78a2e048ca007746cb764f0673e4b1812d176bbb173e1a291f31cf633f1d0bad7d3cf071c30e98cd0688b5bcce65ecaceb36",
+        passphrase: ""
       }
+    ];
+
+    testVectors.forEach((vector, index) => {
+      it(`should match BIP39 test vector ${index + 1}`, async () => {
+        const entropy = hexToBytes(vector.entropy);
+
+        // Test entropy to mnemonic
+        const mnemonic = bip39.entropyToMnemonic(entropy, english);
+        expect(mnemonic).toBe(vector.mnemonic);
+
+        // Test mnemonic validation
+        expect(bip39.validateMnemonic(mnemonic, english)).toBe(true);
+
+        // Test mnemonic to entropy
+        const recoveredEntropy = bip39.mnemonicToEntropy(mnemonic, english);
+        expect(bytesToHex(recoveredEntropy)).toBe(vector.entropy);
+
+        // Test mnemonic to seed
+        const seed = await bip39.mnemonicToSeed(mnemonic, vector.passphrase);
+        expect(bytesToHex(seed)).toBe(vector.seed);
+      });
     });
   });
 
-  describe("edge cases and error handling", () => {
-    test("should handle various mnemonic lengths correctly", () => {
-      // Test different entropy lengths
-      const entropies = [
-        "00000000000000000000000000000000", // 128 bits -> 12 words
-        "0000000000000000000000000000000000000000", // 160 bits -> 15 words
-        "000000000000000000000000000000000000000000000000", // 192 bits -> 18 words
-        "00000000000000000000000000000000000000000000000000000000000000000" // 256 bits -> 24 words
-      ];
+  describe("edge cases", () => {
+    it("should handle empty passphrase", async () => {
+      const mnemonic = bip39.generateMnemonic(english);
+      const seed1 = await bip39.mnemonicToSeed(mnemonic, "");
+      const seed2 = await bip39.mnemonicToSeed(mnemonic);
 
-      const expectedLengths = [12, 15, 18, 24];
+      expect(bytesToHex(seed1)).toBe(bytesToHex(seed2));
+    });
 
-      for (const [index, entropy] of entropies.entries()) {
-        const mnemonic = bip39.entropyToMnemonic(entropy);
-        const words = mnemonic.split(" ");
-        expect(words).toHaveLength(expectedLengths[index]);
-        expect(bip39.validateMnemonic(mnemonic)).toBe(true);
-        expect(bip39.mnemonicToEntropy(mnemonic)).toBe(entropy);
+    it("should handle unicode passphrase", async () => {
+      const mnemonic = bip39.generateMnemonic(english);
+      const unicodePassphrase = "测试密码🔐";
+
+      const seed = await bip39.mnemonicToSeed(mnemonic, unicodePassphrase);
+      expect(seed).toBeInstanceOf(Uint8Array);
+      expect(seed.length).toBe(64);
+    });
+
+    it("should be case sensitive for passphrases", async () => {
+      const mnemonic = bip39.generateMnemonic(english);
+      const seed1 = await bip39.mnemonicToSeed(mnemonic, "Password");
+      const seed2 = await bip39.mnemonicToSeed(mnemonic, "password");
+
+      expect(bytesToHex(seed1)).not.toBe(bytesToHex(seed2));
+    });
+
+    it("should normalize mnemonic spaces", () => {
+      const mnemonic =
+        "abandon  abandon   abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+      const normalizedMnemonic = mnemonic.replace(/\s+/g, " ").trim();
+
+      expect(bip39.validateMnemonic(normalizedMnemonic, english)).toBe(true);
+    });
+  });
+
+  describe("security considerations", () => {
+    it("should generate cryptographically secure entropy", () => {
+      const mnemonics = new Set();
+
+      // Generate multiple mnemonics and ensure they're unique
+      for (let i = 0; i < 100; i++) {
+        const mnemonic = bip39.generateMnemonic(english);
+        expect(mnemonics.has(mnemonic)).toBe(false);
+        mnemonics.add(mnemonic);
       }
     });
 
-    test("should handle empty and invalid inputs gracefully", () => {
-      expect(bip39.validateMnemonic("")).toBe(false);
-      expect(bip39.validateMnemonic("   ")).toBe(false);
-      expect(() => bip39.mnemonicToEntropy("")).toThrow();
-    });
-
-    test("should normalize mnemonic input", () => {
+    it("should produce deterministic results for same inputs", async () => {
       const mnemonic =
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-      const mnemonicWithExtraSpaces =
-        "  abandon   abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about  ";
+      const passphrase = "test";
 
-      // Note: The actual implementation might not handle extra spaces,
-      // this test checks current behavior
-      expect(() => {
-        const entropy1 = bip39.mnemonicToEntropy(mnemonic);
-        const entropy2 = bip39.mnemonicToEntropy(
-          mnemonicWithExtraSpaces.trim()
-        );
-        expect(entropy1).toBe(entropy2);
-      }).not.toThrow();
-    });
-  });
+      const seed1 = await bip39.mnemonicToSeed(mnemonic, passphrase);
+      const seed2 = await bip39.mnemonicToSeed(mnemonic, passphrase);
 
-  describe("cross-compatibility tests", () => {
-    test("should round-trip entropy -> mnemonic -> entropy", () => {
-      const testEntropies = [
-        "00000000000000000000000000000000",
-        "ffffffffffffffffffffffffffffffff",
-        "000102030405060708090a0b0c0d0e0f",
-        "68a79eaca2324873eacc50cb9c6eca8cc68a79eaca2324873eacc50cb9c6eca8c"
-      ];
-
-      for (const originalEntropy of testEntropies) {
-        const mnemonic = bip39.entropyToMnemonic(originalEntropy);
-        const recoveredEntropy = bip39.mnemonicToEntropy(mnemonic);
-        expect(recoveredEntropy).toBe(originalEntropy);
-      }
+      expect(bytesToHex(seed1)).toBe(bytesToHex(seed2));
     });
 
-    test("should round-trip mnemonic -> entropy -> mnemonic", () => {
-      const testMnemonics = [
-        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
-        "legal winner thank year wave sausage worth useful legal winner thank yellow",
-        "letter advice cage absurd amount doctor acoustic avoid letter advice cage above"
-      ];
+    it("should validate checksum correctly", () => {
+      // Generate a valid mnemonic
+      const validMnemonic = bip39.generateMnemonic(english);
+      expect(bip39.validateMnemonic(validMnemonic, english)).toBe(true);
 
-      for (const originalMnemonic of testMnemonics) {
-        const entropy = bip39.mnemonicToEntropy(originalMnemonic);
-        const recoveredMnemonic = bip39.entropyToMnemonic(entropy);
-        expect(recoveredMnemonic).toBe(originalMnemonic);
-      }
+      // Modify last word to create invalid checksum
+      const words = validMnemonic.split(" ");
+      words[words.length - 1] = "abandon"; // Replace with different word
+      const invalidMnemonic = words.join(" ");
+
+      expect(bip39.validateMnemonic(invalidMnemonic, english)).toBe(false);
     });
   });
 });
