@@ -2,6 +2,8 @@ import { Curves } from "@/common/constants";
 import { HARDENED_OFFSET, HDKey } from "@/wallet/hd-key";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { randomBytes } from "@noble/hashes/utils";
+import * as bip39 from "@scure/bip39";
+import { wordlist as english } from "@scure/bip39/wordlists/english";
 
 describe("HDKey", () => {
   let testSeed: Uint8Array;
@@ -20,7 +22,10 @@ describe("HDKey", () => {
 
   describe("fromMasterSeed", () => {
     it("should create HDKey from valid seed", () => {
-      const seed = randomBytes(32);
+      const mnemonic = bip39.generateMnemonic(english, 128);
+      const entropy = bip39.mnemonicToEntropy(mnemonic, english);
+      expect(entropy.length).toBe(128 / 8);
+      const seed = bip39.mnemonicToSeedSync(mnemonic);
       const hdkey = HDKey.fromMasterSeed(seed);
 
       expect(hdkey).toBeInstanceOf(HDKey);

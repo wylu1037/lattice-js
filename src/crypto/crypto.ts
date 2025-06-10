@@ -12,20 +12,20 @@ const cryptoServiceMap = new Map<Curve, CryptoService>();
  * @returns The crypto service
  */
 export function newCrypto(curve: Curve): CryptoService {
-if (cryptoServiceMap.has(curve)) {
-  return cryptoServiceMap.get(curve) as CryptoService;
-}
+  if (cryptoServiceMap.has(curve)) {
+    return cryptoServiceMap.get(curve) as CryptoService;
+  }
 
-switch (curve) {
-  case Curves.Secp256k1:
-    cryptoServiceMap.set(curve, new NIST());
-    return cryptoServiceMap.get(curve) as CryptoService;
-  case Curves.Sm2p256v1:
-    cryptoServiceMap.set(curve, new GM());
-    return cryptoServiceMap.get(curve) as CryptoService;
-  default:
-    throw new Error(`Unsupported curve: ${curve}`);
-}
+  switch (curve) {
+    case Curves.Secp256k1:
+      cryptoServiceMap.set(curve, new NIST());
+      return cryptoServiceMap.get(curve) as CryptoService;
+    case Curves.Sm2p256v1:
+      cryptoServiceMap.set(curve, new GM());
+      return cryptoServiceMap.get(curve) as CryptoService;
+    default:
+      throw new Error(`Unsupported curve: ${curve}`);
+  }
 }
 
 export type EncodeFunc = () => Buffer;

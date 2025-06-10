@@ -1,7 +1,16 @@
+import {
+  ADDRESS_BYTES_LENGTH,
+  ADDRESS_TITLE,
+  ADDRESS_VERSION
+} from "@/common/constants";
 import type { KeyPair } from "@/common/index";
 import { log } from "@/logger";
-import { randomBytes } from "@noble/hashes/utils";
-import { secp256k1 } from "ethereum-cryptography/secp256k1";
+import { Base58Impl, Base58Interface } from "@/utils/base58";
+import { stripHexPrefix } from "@/utils/string";
+import { isHexString } from "@ethersproject/bytes";
+import { secp256k1 } from "@noble/curves/secp256k1";
+import { sha256 } from "@noble/hashes/sha2";
+import { bytesToHex, randomBytes } from "@noble/hashes/utils";
 import type { CryptoService, EncodeFunc } from "./crypto";
 
 export class NIST implements CryptoService {
@@ -57,23 +66,48 @@ export class NIST implements CryptoService {
   }
 
   publicKeyToAddress(publicKey: Buffer | string): string {
-    return "";
+    let publicKeyBuffer: Buffer;
+    if (typeof publicKey === "string") {
+      publicKeyBuffer = Buffer.from(publicKey, "hex");
+    } else {
+      publicKeyBuffer = publicKey;
+    }
+
+    if (publicKeyBuffer.length > 64) {
+      publicKeyBuffer = publicKeyBuffer.subarray(publicKeyBuffer.length - 64);
+    }
+
+    const bs = this.hash(publicKeyBuffer);
+    const base58: Base58Interface = new Base58Impl();
+    const address = base58.checkEncode(
+      bs.subarray(bs.length - ADDRESS_BYTES_LENGTH),
+      ADDRESS_VERSION
+    );
+    return `${ADDRESS_TITLE}_${address}`;
   }
 
   getPublicKeyFromPrivateKey(privateKey: string): string {
-    return "";
+    if (!isHexString(privateKey)) {
+      throw new Error(
+        `Invalid private key, excepted hex string, but actual is ${privateKey}`
+      );
+    }
+    const publicKey = secp256k1.getPublicKey(stripHexPrefix(privateKey), false);
+    return `0x${bytesToHex(publicKey)}`;
   }
 
   hash(data: Buffer): Buffer {
-    return Buffer.from("01", "hex");
+    return Buffer.from(sha256(data));
   }
 
   encodeHash(encodeFunc: EncodeFunc): Buffer {
-    return Buffer.from("01", "hex");
+    const hash = encodeFunc();
+    return this.hash(hash);
   }
 
   sign(data: Buffer, privateKey: string): string {
-    return "";
+    const signature = secp256k1.sign(data, stripHexPrefix(privateKey));
+    return `0x${signature.toCompactHex()}`;
   }
 
   verify(
@@ -81,6 +115,13 @@ export class NIST implements CryptoService {
     signature: string,
     uncompressedPublicKey: string
   ): boolean {
-    return true;
+    const recoveredSignature = secp256k1.Signature.fromCompact(
+      stripHexPrefix(signature)
+    );
+    return secp256k1.verify(
+      recoveredSignature,
+      data,
+      stripHexPrefix(uncompressedPublicKey)
+    );
   }
 }

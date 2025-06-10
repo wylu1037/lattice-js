@@ -20,9 +20,6 @@ importers:
       '@ethersproject/bytes':
         specifier: ^5.8.0
         version: 5.8.0
-      '@ethersproject/hdnode':
-        specifier: ^5.8.0
-        version: 5.8.0
       '@ethersproject/properties':
         specifier: ^5.8.0
         version: 5.8.0
@@ -36,9 +33,6 @@ importers:
         specifier: ^5.8.0
         version: 5.8.0
       '@ethersproject/units':
-        specifier: ^5.8.0
-        version: 5.8.0
-      '@ethersproject/wordlists':
         specifier: ^5.8.0
         version: 5.8.0
       '@jvddavid/pino-rotating-file':
@@ -68,9 +62,6 @@ importers:
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
-      ethereum-cryptography:
-        specifier: ^3.0.0
-        version: 3.1.0
       neverthrow:
         specifier: ^8.2.0
         version: 8.2.0
@@ -677,9 +668,6 @@ packages:
   '@ethersproject/hash@5.8.0':
     resolution: {integrity: sha512-ac/lBcTbEWW/VGJij0CNSw/wPcw9bSRgCB0AIBz8CvED/jfvDoV9hsIIiWfvWmFEi8RcXtlNwp2jv6ozWOsooA==}
 
-  '@ethersproject/hdnode@5.8.0':
-    resolution: {integrity: sha512-4bK1VF6E83/3/Im0ERnnUeWOY3P1BZml4ZD3wcH8Ys0/d1h1xaFt6Zc+Dh9zXf9TapGro0T4wvO71UTCp3/uoA==}
-
   '@ethersproject/keccak256@5.8.0':
     resolution: {integrity: sha512-A1pkKLZSz8pDaQ1ftutZoaN46I6+jvuqugx5KYNeQOPqq+JZ0Txm7dlWesCHB5cndJSu5vP2VKptKf7cksERng==}
 
@@ -688,9 +676,6 @@ packages:
 
   '@ethersproject/networks@5.8.0':
     resolution: {integrity: sha512-egPJh3aPVAzbHwq8DD7Po53J4OUSsA1MjQp8Vf/OZPav5rlmWUaFLiq8cvQiGK0Z5K6LYzm29+VA/p4RL1FzNg==}
-
-  '@ethersproject/pbkdf2@5.8.0':
-    resolution: {integrity: sha512-wuHiv97BrzCmfEaPbUFpMjlVg/IDkZThp9Ri88BpjRleg4iePJaj2SW8AIyE8cXn5V1tuAaMj6lzvsGJkGWskg==}
 
   '@ethersproject/properties@5.8.0':
     resolution: {integrity: sha512-PYuiEoQ+FMaZZNGrStmN7+lWjlsoufGIHdww7454FIaGdbe/p5rnaCXTr5MtBYl3NkeoVhHZuyzChPeGeKIpQw==}
@@ -715,9 +700,6 @@ packages:
 
   '@ethersproject/web@5.8.0':
     resolution: {integrity: sha512-j7+Ksi/9KfGviws6Qtf9Q7KCqRhpwrYKQPs+JBA/rKVFF/yaWLHJEH3zfVP2plVu+eys0d2DlFmhoQJayFewcw==}
-
-  '@ethersproject/wordlists@5.8.0':
-    resolution: {integrity: sha512-2df9bbXicZws2Sb5S6ET493uJ0Z84Fjr3pC4tu/qlnZERibZCeUVuqdtt+7Tv9xxhUxHoIekIA7avrKUWHrezg==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -761,24 +743,12 @@ packages:
   '@keyv/serialize@1.0.3':
     resolution: {integrity: sha512-qnEovoOp5Np2JDGonIDL6Ayihw0RhnRh6vxPuHo4RDn1UOzwEo4AeIfpL6UGIrsceWrCMiVPgwRjbHu4vYFc3g==}
 
-  '@noble/ciphers@1.2.1':
-    resolution: {integrity: sha512-rONPWMC7PeExE077uLE4oqWrZ1IvAfz3oH9LibVAcVCopJiA9R62uavnbEzdkVmJYI6M6Zgkbeb07+tWjlq2XA==}
-    engines: {node: ^14.21.3 || >=16}
-
   '@noble/ciphers@1.3.0':
     resolution: {integrity: sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw==}
     engines: {node: ^14.21.3 || >=16}
 
-  '@noble/curves@1.8.1':
-    resolution: {integrity: sha512-warwspo+UYUPep0Q+vtdVB4Ugn8GGQj8iyB3gnRWsztmUHTI3S1nhdiWNsPUGL0vud7JlRRk1XEu7Lq1KGTnMQ==}
-    engines: {node: ^14.21.3 || >=16}
-
   '@noble/curves@1.9.0':
     resolution: {integrity: sha512-7YDlXiNMdO1YZeH6t/kvopHHbIZzlxrCV9WLqCY6QhcXOoXiNCMDqJIglZ9Yjx5+w7Dz30TITFrlTjnRg7sKEg==}
-    engines: {node: ^14.21.3 || >=16}
-
-  '@noble/hashes@1.7.1':
-    resolution: {integrity: sha512-B8XBPsn4vT/KJAGqDzbwztd+6Yte3P4V7iafm24bxgDe/mlRuK6xmWPuCNrKt2vDafZ8MfJLlchDG/vYafQEjQ==}
     engines: {node: ^14.21.3 || >=16}
 
   '@noble/hashes@1.8.0':
@@ -935,17 +905,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@scure/base@1.2.4':
-    resolution: {integrity: sha512-5Yy9czTO47mqz+/J8GM6GIId4umdCk1wc1q8rKERQulIoc8VP9pzDcghv10Tl2E7R96ZUx/PhND3ESYUQX8NuQ==}
-
   '@scure/base@1.2.6':
     resolution: {integrity: sha512-g/nm5FgUa//MCj1gV09zTJTaM6KBAHqLN907YVQqf7zC49+DcO4B1so4ZX07Ef10Twr6nuqYEH9GEggFXA4Fmg==}
-
-  '@scure/bip32@1.6.2':
-    resolution: {integrity: sha512-t96EPDMbtGgtb7onKKqxRLfE5g05k7uHnHRM2xdE6BP/ZmxaLtPek4J4KfVn/90IQNrU1IOAqMgiDtUdtbe3nw==}
-
-  '@scure/bip39@1.5.4':
-    resolution: {integrity: sha512-TFM4ni0vKvCfBpohoh+/lY05i9gRbSwXWngAsF4CABQxoaOHijxuaZ2R6cStDQ5CHtHO9aGJTr4ksVJASRRyMA==}
 
   '@scure/bip39@1.6.0':
     resolution: {integrity: sha512-+lF0BbLiJNwVlev4eKelw1WWLaiKXw7sSl8T6FvBlWkdX+94aGJ4o8XjUdlyhTCjd8c+B3KT3JfS8P0bLRNU6A==}
@@ -1256,10 +1217,6 @@ packages:
 
   estree-walker@3.0.3:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
-
-  ethereum-cryptography@3.1.0:
-    resolution: {integrity: sha512-ZqHd92eOIH9RExpBUOgzpAgflyFv9/+Ca39G8V+oCjJPGjJUihQcG/Gl67I/Xn2HGS87dgnrCG3kb1jNClLi6g==}
-    engines: {node: ^14.21.3 || >=16, npm: '>=9'}
 
   event-target-shim@5.0.1:
     resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
@@ -2464,21 +2421,6 @@ snapshots:
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
 
-  '@ethersproject/hdnode@5.8.0':
-    dependencies:
-      '@ethersproject/abstract-signer': 5.8.0
-      '@ethersproject/basex': 5.8.0
-      '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/logger': 5.8.0
-      '@ethersproject/pbkdf2': 5.8.0
-      '@ethersproject/properties': 5.8.0
-      '@ethersproject/sha2': 5.8.0
-      '@ethersproject/signing-key': 5.8.0
-      '@ethersproject/strings': 5.8.0
-      '@ethersproject/transactions': 5.8.0
-      '@ethersproject/wordlists': 5.8.0
-
   '@ethersproject/keccak256@5.8.0':
     dependencies:
       '@ethersproject/bytes': 5.8.0
@@ -2489,11 +2431,6 @@ snapshots:
   '@ethersproject/networks@5.8.0':
     dependencies:
       '@ethersproject/logger': 5.8.0
-
-  '@ethersproject/pbkdf2@5.8.0':
-    dependencies:
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/sha2': 5.8.0
 
   '@ethersproject/properties@5.8.0':
     dependencies:
@@ -2551,14 +2488,6 @@ snapshots:
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
 
-  '@ethersproject/wordlists@5.8.0':
-    dependencies:
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/hash': 5.8.0
-      '@ethersproject/logger': 5.8.0
-      '@ethersproject/properties': 5.8.0
-      '@ethersproject/strings': 5.8.0
-
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
@@ -2605,19 +2534,11 @@ snapshots:
     dependencies:
       buffer: 6.0.3
 
-  '@noble/ciphers@1.2.1': {}
-
   '@noble/ciphers@1.3.0': {}
-
-  '@noble/curves@1.8.1':
-    dependencies:
-      '@noble/hashes': 1.7.1
 
   '@noble/curves@1.9.0':
     dependencies:
       '@noble/hashes': 1.8.0
-
-  '@noble/hashes@1.7.1': {}
 
   '@noble/hashes@1.8.0': {}
 
@@ -2725,20 +2646,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.40.1':
     optional: true
 
-  '@scure/base@1.2.4': {}
-
   '@scure/base@1.2.6': {}
-
-  '@scure/bip32@1.6.2':
-    dependencies:
-      '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
-      '@scure/base': 1.2.4
-
-  '@scure/bip39@1.5.4':
-    dependencies:
-      '@noble/hashes': 1.7.1
-      '@scure/base': 1.2.4
 
   '@scure/bip39@1.6.0':
     dependencies:
@@ -3095,14 +3003,6 @@ snapshots:
   estree-walker@3.0.3:
     dependencies:
       '@types/estree': 1.0.7
-
-  ethereum-cryptography@3.1.0:
-    dependencies:
-      '@noble/ciphers': 1.2.1
-      '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
-      '@scure/bip32': 1.6.2
-      '@scure/bip39': 1.5.4
 
   event-target-shim@5.0.1: {}
 

@@ -70,7 +70,7 @@ export class GM implements CryptoService {
   getPublicKeyFromPrivateKey(privateKey: string): string {
     if (!isHexString(privateKey)) {
       throw new Error(
-        `Invalid private key, expected size is 32, but actual size is ${privateKey.length}`
+        `Invalid private key, excepted hex string, but actual is ${privateKey}`
       );
     }
 

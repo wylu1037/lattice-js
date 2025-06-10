@@ -1,23 +1,4 @@
 import { Curve } from "@/common/index";
-/**
- * BIP32 hierarchical deterministic (HD) wallets over secp256k1.
- * @module
- * @example
- * ```js
- * import { HDKey } from "@scure/bip32";
- * const hdkey1 = HDKey.fromMasterSeed(seed);
- * const hdkey2 = HDKey.fromExtendedKey(base58key);
- * const hdkey3 = HDKey.fromJSON({ xpriv: string });
- *
- * // props
- * [hdkey1.depth, hdkey1.index, hdkey1.chainCode];
- * console.log(hdkey2.privateKey, hdkey2.publicKey);
- * console.log(hdkey3.derive("m/0/2147483647'/1"));
- * const sig = hdkey3.sign(hash);
- * hdkey3.verify(hash, sig);
- * ```
- */
-/*! scure-bip32 - MIT License (c) 2022 Patricio Palladino, Paul Miller (paulmillr.com) */
 import { mod } from "@noble/curves/abstract/modular";
 import { SignatureType } from "@noble/curves/abstract/weierstrass";
 import { secp256k1 as secp } from "@noble/curves/secp256k1";
@@ -177,6 +158,7 @@ export class HDKey {
   public static fromJSON(json: { xpriv: string }): HDKey {
     return HDKey.fromExtendedKey(json.xpriv);
   }
+
   public readonly versions: Versions;
   public readonly depth: number = 0;
   public readonly index: number = 0;
