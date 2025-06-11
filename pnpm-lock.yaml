@@ -50,6 +50,9 @@ importers:
       '@noble/hashes':
         specifier: ^1.8.0
         version: 1.8.0
+      '@scure/base':
+        specifier: ^1.2.6
+        version: 1.2.6
       '@scure/bip39':
         specifier: ^1.6.0
         version: 1.6.0

@@ -1,6 +1,5 @@
 import { Curves } from "@/common/constants";
 import { createCrypto } from "@/crypto/crypto";
-import { sm2Curve } from "@/crypto/sm2/ec";
 import { sm2Curve as sm2p } from "@/crypto/sm2/ec";
 import { HARDENED_OFFSET, HDKey } from "@/wallet/hd-key";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
