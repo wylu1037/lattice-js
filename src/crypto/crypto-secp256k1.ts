@@ -68,7 +68,7 @@ export class NIST implements CryptoService {
   publicKeyToAddress(publicKey: Buffer | string): string {
     let publicKeyBuffer: Buffer;
     if (typeof publicKey === "string") {
-      publicKeyBuffer = Buffer.from(publicKey, "hex");
+      publicKeyBuffer = Buffer.from(stripHexPrefix(publicKey), "hex");
     } else {
       publicKeyBuffer = publicKey;
     }
