@@ -2,7 +2,7 @@ import { type TransactionType, TransactionTypeCodeRecord, TransactionTypes, ZERO
 import { type Curve } from "@/common/constants";
 import { Address } from "@/common/types/address";
 import type { Addr, Hash, UInt64 } from "@/common/types/type.alias";
-import { newCrypto } from "@/crypto/crypto";
+import { createCrypto } from "@/crypto/crypto";
 import { BigNumber } from "@ethersproject/bignumber";
 import { arrayify, hexlify, stripZeros } from "@ethersproject/bytes";
 import { encode as rlpEncode } from "@ethersproject/rlp";
@@ -154,7 +154,7 @@ export class Transaction {
     privateKey: string
   ): Result<Buffer, Error> {
     try {
-      const cryptoService = newCrypto(curve);
+      const cryptoService = createCrypto(curve);
       let _privateKey = privateKey;
       if (_privateKey.startsWith("0x")) {
         _privateKey = _privateKey.slice(2);
@@ -171,7 +171,7 @@ export class Transaction {
   }
 
   public rlpEncodeHash(chainId: number, curve: Curve): Buffer {
-    const cryptoService = newCrypto(curve);
+    const cryptoService = createCrypto(curve);
     const encoded = cryptoService.encodeHash(() => {
       const encoded = rlpEncode([
         this.handleNumber(this.number ?? 0),

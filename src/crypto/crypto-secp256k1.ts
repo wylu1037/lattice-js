@@ -73,11 +73,13 @@ export class NIST implements CryptoService {
       publicKeyBuffer = publicKey;
     }
 
-    if (publicKeyBuffer.length > 64) {
-      publicKeyBuffer = publicKeyBuffer.subarray(publicKeyBuffer.length - 64);
+    if (publicKeyBuffer.length < 64) {
+      throw new Error(
+        `Invalid public key length, expected size greater than or equal to 64, but actual size is ${publicKeyBuffer.length}`
+      );
     }
 
-    const bs = this.hash(publicKeyBuffer);
+    const bs = this.hash(publicKeyBuffer.subarray(publicKeyBuffer.length - 64));
     const base58: Base58Interface = new Base58Impl();
     const address = base58.checkEncode(
       bs.subarray(bs.length - ADDRESS_BYTES_LENGTH),
@@ -86,13 +88,16 @@ export class NIST implements CryptoService {
     return `${ADDRESS_TITLE}_${address}`;
   }
 
-  getPublicKeyFromPrivateKey(privateKey: string): string {
+  getPublicKeyFromPrivateKey(privateKey: string, compressed = false): string {
     if (!isHexString(privateKey)) {
       throw new Error(
         `Invalid private key, excepted hex string, but actual is ${privateKey}`
       );
     }
-    const publicKey = secp256k1.getPublicKey(stripHexPrefix(privateKey), false);
+    const publicKey = secp256k1.getPublicKey(
+      stripHexPrefix(privateKey),
+      compressed
+    );
     return `0x${bytesToHex(publicKey)}`;
   }
 

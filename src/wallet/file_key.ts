@@ -1,5 +1,5 @@
 import { type Curve, Curves, HEX_PREFIX } from "@/common/constants";
-import { newCrypto } from "@/crypto";
+import { createCrypto } from "@/crypto";
 import { hexlify } from "@ethersproject/bytes";
 import { scrypt } from "@noble/hashes/scrypt";
 import { randomBytes } from "@noble/hashes/utils";
@@ -99,7 +99,7 @@ function generateFileKey(
   passphrase: string,
   curve: Curve
 ): Result<FileKey, Error> {
-  const crypto = newCrypto(curve);
+  const crypto = createCrypto(curve);
   const address = crypto.publicKeyToAddress(
     crypto.getPublicKeyFromPrivateKey(privateKey)
   );
@@ -142,7 +142,7 @@ function decryptFileKey(
   const cipher = Buffer.from(fk.cipher.cipherText, "hex");
 
   const curve = fk.isGm ? Curves.Sm2p256v1 : Curves.Secp256k1;
-  const actualMac = newCrypto(curve).hash(Buffer.concat([hashKey, cipher]));
+  const actualMac = createCrypto(curve).hash(Buffer.concat([hashKey, cipher]));
   const expectedMac = Buffer.from(fk.cipher.mac, "hex");
 
   if (actualMac.toString("hex") !== expectedMac.toString("hex")) {
@@ -183,7 +183,7 @@ function generateCipher(
       "hex"
     )
   );
-  const mac = newCrypto(curve).hash(Buffer.concat([hashKey, cipher]));
+  const mac = createCrypto(curve).hash(Buffer.concat([hashKey, cipher]));
 
   return ok(
     new Cipher(

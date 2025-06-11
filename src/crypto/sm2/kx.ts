@@ -4,7 +4,6 @@ import { field, sm2Curve } from './ec';
 import { sm3 } from './sm3';
 import { KeyPair, hexToArray, leftPad } from './utils';
 
-
 // 用到的常数
 const wPow2 = utils.hexToNumber('80000000000000000000000000000000')
 const wPow2Sub1 = utils.hexToNumber('7fffffffffffffffffffffffffffffff')

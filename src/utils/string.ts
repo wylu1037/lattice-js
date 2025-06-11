@@ -1,5 +1,4 @@
 import { HEX_PREFIX } from "@/common/constants";
-import { isHexString } from "@ethersproject/bytes";
 
 /**
  * Strip the hex prefix from a hex string
@@ -7,9 +6,9 @@ import { isHexString } from "@ethersproject/bytes";
  * @returns The hex string without the prefix
  */
 export function stripHexPrefix(hex: string): string {
-  if (!isHexString(hex)) {
+  /* if (!isHexString(hex)) {
     throw new Error("Invalid hex string");
-  }
+  } */
   return hex.startsWith(HEX_PREFIX) ? hex.slice(HEX_PREFIX.length) : hex;
 }
 

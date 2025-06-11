@@ -1,3 +1,4 @@
+import { stripHexPrefix } from "@/utils/string";
 import { mod } from '@noble/curves/abstract/modular';
 /* eslint-disable no-bitwise, no-mixed-operators, no-use-before-define, max-len */
 import * as utils from '@noble/curves/abstract/utils';
@@ -33,15 +34,18 @@ export function generateKeyPairHex(str?: string): KeyPair {
  * 生成压缩公钥
  */
 export function compressPublicKeyHex(s: string) {
-  if (s.length !== 130) throw new Error('Invalid public key to compress')
+  if (stripHexPrefix(s).length === 66) {
+    return stripHexPrefix(s);
+  }
+  if (s.length !== 130) throw new Error("Invalid public key to compress");
 
-  const len = (s.length - 2) / 2
-  const xHex = s.substring(2, 2 + len)
-  const y = utils.hexToNumber(s.substring(len + 2, len + len + 2))
+  const len = (s.length - 2) / 2;
+  const xHex = s.substring(2, 2 + len);
+  const y = utils.hexToNumber(s.substring(len + 2, len + len + 2));
 
-  let prefix = '03'
-  if (mod(y, TWO) === ZERO) prefix = '02'
-  return prefix + xHex
+  let prefix = "03";
+  if (mod(y, TWO) === ZERO) prefix = "02";
+  return prefix + xHex;
 }
 
 /**
@@ -104,16 +108,16 @@ export function arrayToUtf8(arr: Uint8Array) {
 export function hexToArray(hexStr: string) {
   let hexStrLength = hexStr.length
 
-  if (hexStrLength % 2 !== 0) {
-    hexStr = leftPad(hexStr, hexStrLength + 1)
-  }
+  const _hexStr =
+    hexStrLength % 2 !== 0 ? leftPad(hexStr, hexStrLength + 1) : hexStr;
+  
 
-  hexStrLength = hexStr.length
+  hexStrLength = _hexStr.length;
   const wordLength = hexStrLength / 2
   const words = new Uint8Array(wordLength)
 
   for (let i = 0; i < wordLength; i++) {
-    words[i] = (parseInt(hexStr.substring(i * 2, i * 2 + 2), 16))
+    words[i] = parseInt(_hexStr.substring(i * 2, i * 2 + 2), 16);
   }
   return words
 }
@@ -130,6 +134,10 @@ export function verifyPublicKey(publicKey: string) {
   } catch (error) {
     return false
   }
+}
+
+export function isValidPrivateKey(privateKey: string) {
+  return sm2Curve.utils.isValidPrivateKey(privateKey);
 }
 
 /**

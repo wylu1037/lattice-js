@@ -1,4 +1,6 @@
-import { Curve } from "@/common/index";
+import { Curve, Curves } from "@/common/index";
+import { compressPublicKeyHex, getPublicKeyFromPrivateKey } from "@/crypto/sm2";
+import { sm2Curve as sm2p } from "@/crypto/sm2/ec";
 import { mod } from "@noble/curves/abstract/modular";
 import { SignatureType } from "@noble/curves/abstract/weierstrass";
 import { secp256k1 as secp } from "@noble/curves/secp256k1";
@@ -60,6 +62,7 @@ interface HDKeyOpt {
   chainCode?: Uint8Array;
   publicKey?: Uint8Array;
   privateKey?: Uint8Array | bigint;
+  curve?: Curve; // default is sm2p256v1
 }
 
 /**
@@ -113,7 +116,8 @@ export class HDKey {
 
   public static fromMasterSeed(
     seed: Uint8Array,
-    versions: Versions = BITCOIN_VERSIONS
+    versions: Versions = BITCOIN_VERSIONS,
+    curve: Curve = Curves.Sm2p256v1
   ): HDKey {
     abytes(seed);
     if (8 * seed.length < 128 || 8 * seed.length > 512) {
@@ -125,13 +129,15 @@ export class HDKey {
     return new HDKey({
       versions,
       chainCode: I.slice(32),
-      privateKey: I.slice(0, 32)
+      privateKey: I.slice(0, 32),
+      curve
     });
   }
 
   public static fromExtendedKey(
     base58key: string,
-    versions: Versions = BITCOIN_VERSIONS
+    versions: Versions = BITCOIN_VERSIONS,
+    curve: Curve = Curves.Sm2p256v1
   ): HDKey {
     // => version(4) || depth(1) || fingerprint(4) || index(4) || chain(32) || key(33)
     const keyBuffer: Uint8Array = base58check.decode(base58key);
@@ -150,9 +156,9 @@ export class HDKey {
       throw new Error("Version mismatch");
     }
     if (isPriv) {
-      return new HDKey({ ...opt, privateKey: key.slice(1) });
+      return new HDKey({ ...opt, privateKey: key.slice(1), curve });
     }
-    return new HDKey({ ...opt, publicKey: key });
+    return new HDKey({ ...opt, publicKey: key, curve });
   }
 
   public static fromJSON(json: { xpriv: string }): HDKey {
@@ -168,6 +174,7 @@ export class HDKey {
   private privKeyBytes?: Uint8Array;
   private pubKey?: Uint8Array;
   private pubHash: Uint8Array | undefined;
+  private curve: Curve;
 
   constructor(opt: HDKeyOpt) {
     if (!opt || typeof opt !== "object") {
@@ -178,6 +185,7 @@ export class HDKey {
     this.chainCode = opt.chainCode || null;
     this.index = opt.index || 0;
     this.parentFingerprint = opt.parentFingerprint || 0;
+    this.curve = opt.curve || Curves.Sm2p256v1;
     if (!this.depth) {
       if (this.parentFingerprint || this.index) {
         throw new Error(
@@ -189,17 +197,57 @@ export class HDKey {
       throw new Error("HDKey: publicKey and privateKey at same time.");
     }
     if (opt.privateKey) {
-      if (!secp.utils.isValidPrivateKey(opt.privateKey)) {
-        throw new Error("Invalid private key");
+      switch (this.curve) {
+        case Curves.Sm2p256v1:
+          if (
+            !sm2p.utils.isValidPrivateKey(
+              bytesToHex(
+                typeof opt.privateKey === "bigint"
+                  ? numberToBytes(opt.privateKey)
+                  : opt.privateKey
+              )
+            )
+          ) {
+            throw new Error("Invalid private key");
+          }
+          this.privKey =
+            typeof opt.privateKey === "bigint"
+              ? opt.privateKey
+              : bytesToNumber(opt.privateKey);
+          this.privKeyBytes = numberToBytes(this.privKey);
+          this.pubKey = hexToBytes(
+            getPublicKeyFromPrivateKey(
+              typeof opt.privateKey === "bigint"
+                ? bytesToHex(numberToBytes(opt.privateKey))
+                : bytesToHex(opt.privateKey),
+              true
+            )
+          );
+          break;
+        case Curves.Secp256k1:
+          if (!secp.utils.isValidPrivateKey(opt.privateKey)) {
+            throw new Error("Invalid private key");
+          }
+          this.privKey =
+            typeof opt.privateKey === "bigint"
+              ? opt.privateKey
+              : bytesToNumber(opt.privateKey);
+          this.privKeyBytes = numberToBytes(this.privKey);
+          this.pubKey = secp.getPublicKey(opt.privateKey, true);
+          break;
+        default:
+          throw new Error(`Unsupported curve: ${opt.curve}`);
       }
-      this.privKey =
-        typeof opt.privateKey === "bigint"
-          ? opt.privateKey
-          : bytesToNumber(opt.privateKey);
-      this.privKeyBytes = numberToBytes(this.privKey);
-      this.pubKey = secp.getPublicKey(opt.privateKey, true);
     } else if (opt.publicKey) {
-      this.pubKey = Point.fromHex(opt.publicKey).toRawBytes(true); // force compressed point
+      if (opt.curve === Curves.Sm2p256v1) {
+        // compressed public key
+        const compressedPublicKey = compressPublicKeyHex(
+          `0x${bytesToHex(opt.publicKey)}`
+        );
+        this.pubKey = hexToBytes(compressedPublicKey);
+      } else {
+        this.pubKey = Point.fromHex(opt.publicKey).toRawBytes(true); // force compressed point
+      }
     } else {
       throw new Error("HDKey: no public or private key provided");
     }
@@ -255,8 +303,14 @@ export class HDKey {
     const I = hmac(sha512, this.chainCode, data);
     const childTweak = bytesToNumber(I.slice(0, 32));
     const chainCode = I.slice(32);
-    if (!secp.utils.isValidPrivateKey(childTweak)) {
-      throw new Error("Tweak bigger than curve order");
+    if (this.curve === Curves.Sm2p256v1) {
+      if (!sm2p.utils.isValidPrivateKey(childTweak)) {
+        throw new Error("Tweak bigger than curve order");
+      }
+    } else {
+      if (!secp.utils.isValidPrivateKey(childTweak)) {
+        throw new Error("Tweak bigger than curve order");
+      }
     }
     const opt: HDKeyOpt = {
       versions: this.versions,
@@ -268,24 +322,46 @@ export class HDKey {
     try {
       // Private parent key -> private child key
       if (this.privateKey) {
-        const added = mod(this.privKey! + childTweak, secp.CURVE.n);
-        if (!secp.utils.isValidPrivateKey(added)) {
-          throw new Error(
-            "The tweak was out of range or the resulted private key is invalid"
-          );
+        if (this.curve === Curves.Sm2p256v1) {
+          const added = mod(this.privKey! + childTweak, sm2p.CURVE.n);
+          if (!sm2p.utils.isValidPrivateKey(bytesToHex(numberToBytes(added)))) {
+            throw new Error(
+              "The tweak was out of range or the resulted private key is invalid"
+            );
+          }
+          opt.privateKey = added;
+        } else {
+          const added = mod(this.privKey! + childTweak, secp.CURVE.n);
+          if (!secp.utils.isValidPrivateKey(added)) {
+            throw new Error(
+              "The tweak was out of range or the resulted private key is invalid"
+            );
+          }
+          opt.privateKey = added;
         }
-        opt.privateKey = added;
       } else {
-        const added = Point.fromHex(this.pubKey).add(
-          Point.fromPrivateKey(childTweak)
-        );
-        // Cryptographically impossible: hmac-sha512 preimage would need to be found
-        if (added.equals(Point.ZERO)) {
-          throw new Error(
-            "The tweak was equal to negative P, which made the result key invalid"
+        if (this.curve === Curves.Sm2p256v1) {
+          const added = sm2p.ProjectivePoint.fromHex(this.pubKey).add(
+            sm2p.ProjectivePoint.fromPrivateKey(childTweak)
           );
+          if (added.equals(sm2p.ProjectivePoint.ZERO)) {
+            throw new Error(
+              "The tweak was equal to negative P, which made the result key invalid"
+            );
+          }
+          opt.publicKey = added.toRawBytes(true);
+        } else {
+          const added = Point.fromHex(this.pubKey).add(
+            Point.fromPrivateKey(childTweak)
+          );
+          // Cryptographically impossible: hmac-sha512 preimage would need to be found
+          if (added.equals(Point.ZERO)) {
+            throw new Error(
+              "The tweak was equal to negative P, which made the result key invalid"
+            );
+          }
+          opt.publicKey = added.toRawBytes(true);
         }
-        opt.publicKey = added.toRawBytes(true);
       }
       return new HDKey(opt);
     } catch (err) {
@@ -293,19 +369,17 @@ export class HDKey {
     }
   }
 
-  public sign(curve: Curve, hash: Uint8Array): Uint8Array {
+  public sign(hash: Uint8Array): Uint8Array {
     if (!this.privateKey) {
       throw new Error("No privateKey set!");
     }
     abytes(hash, 32);
-    return secp.sign(hash, this.privKey!).toCompactRawBytes();
+    return this.curve === Curves.Sm2p256v1
+      ? sm2p.sign(hash, this.privKey!).toCompactRawBytes()
+      : secp.sign(hash, this.privKey!).toCompactRawBytes();
   }
 
-  public verify(
-    curve: Curve,
-    hash: Uint8Array,
-    signature: Uint8Array
-  ): boolean {
+  public verify(hash: Uint8Array, signature: Uint8Array): boolean {
     abytes(hash, 32);
     abytes(signature, 64);
     if (!this.publicKey) {
@@ -313,11 +387,16 @@ export class HDKey {
     }
     let sig: SignatureType;
     try {
-      sig = secp.Signature.fromCompact(signature);
+      sig =
+        this.curve === Curves.Sm2p256v1
+          ? sm2p.Signature.fromCompact(signature)
+          : secp.Signature.fromCompact(signature);
     } catch (error) {
       return false;
     }
-    return secp.verify(sig, hash, this.publicKey);
+    return this.curve === Curves.Sm2p256v1
+      ? sm2p.verify(sig, hash, this.publicKey)
+      : secp.verify(sig, hash, this.publicKey);
   }
 
   public wipePrivateData(): this {

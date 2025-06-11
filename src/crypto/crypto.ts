@@ -7,11 +7,11 @@ const cryptoServiceMap = new Map<Curve, CryptoService>();
 
 /**
  * Create a new crypto service instance based on the curve
- * 
+ *
  * @param curve The curve, like `Curves.Secp256k1` or `Curves.Sm2p256v1`
  * @returns The crypto service
  */
-export function newCrypto(curve: Curve): CryptoService {
+export function createCrypto(curve: Curve): CryptoService {
   if (cryptoServiceMap.has(curve)) {
     return cryptoServiceMap.get(curve) as CryptoService;
   }
@@ -56,7 +56,7 @@ export interface CryptoService {
    * @param privateKey - The private key, the length is 32 bytes
    * @returns The public key, the length is 65 bytes
    */
-  getPublicKeyFromPrivateKey(privateKey: string): string;
+  getPublicKeyFromPrivateKey(privateKey: string, compressed?: boolean): string;
 
   /**
    * Hash the data

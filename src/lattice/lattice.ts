@@ -5,7 +5,7 @@ import {
   ZERO_ADDRESS
 } from "@/common/constants";
 import { LatestBlock, Receipt, Transaction } from "@/common/types/index";
-import { newCrypto } from "@/crypto/index";
+import { createCrypto } from "@/crypto/index";
 import {
   AccountLock,
   BlockCache,
@@ -335,7 +335,7 @@ class LatticeClient {
           .setAmount(amount)
           .setJoule(joule)
           .build();
-        const codeHash = newCrypto(this.chainConfig.curve).hash(
+        const codeHash = createCrypto(this.chainConfig.curve).hash(
           Buffer.from(code.startsWith(HEX_PREFIX) ? code.slice(2) : code, "hex")
         );
         tx.codeHash = `0x${codeHash.toString("hex")}`;
@@ -430,7 +430,7 @@ class LatticeClient {
           .setAmount(amount)
           .setJoule(joule)
           .build();
-        const codeHash = newCrypto(this.chainConfig.curve).hash(
+        const codeHash = createCrypto(this.chainConfig.curve).hash(
           Buffer.from(code.startsWith(HEX_PREFIX) ? code.slice(2) : code, "hex")
         );
         tx.codeHash = `0x${codeHash.toString("hex")}`;

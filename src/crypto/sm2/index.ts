@@ -295,10 +295,13 @@ export function precomputePublicKey(publicKey: string, windowSize?: number) {
 /**
  * 计算公钥
  */
-export function getPublicKeyFromPrivateKey(privateKey: string) {
-  const pubKey = sm2Curve.getPublicKey(privateKey, false)
-  const pubPad = leftPad(utils.bytesToHex(pubKey), 64)
-  return pubPad
+export function getPublicKeyFromPrivateKey(
+  privateKey: string,
+  compressed = false
+) {
+  const pubKey = sm2Curve.getPublicKey(privateKey, compressed);
+  const pubPad = leftPad(utils.bytesToHex(pubKey), 64);
+  return pubPad;
 }
 
 /**

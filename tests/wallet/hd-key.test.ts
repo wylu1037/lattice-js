@@ -1,4 +1,7 @@
 import { Curves } from "@/common/constants";
+import { createCrypto } from "@/crypto/crypto";
+import { sm2Curve } from "@/crypto/sm2/ec";
+import { sm2Curve as sm2p } from "@/crypto/sm2/ec";
 import { HARDENED_OFFSET, HDKey } from "@/wallet/hd-key";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { randomBytes } from "@noble/hashes/utils";
@@ -177,6 +180,13 @@ describe("HDKey", () => {
 
     it("should derive normal child", () => {
       const child = masterKey.deriveChild(0);
+      console.log(bytesToHex(child.privateKey!));
+      console.log(bytesToHex(child.publicKey!));
+      console.log(
+        createCrypto(Curves.Sm2p256v1).publicKeyToAddress(
+          bytesToHex(sm2p.getPublicKey(child.privateKey!, false))
+        )
+      );
       expect(child.depth).toBe(masterKey.depth + 1);
       expect(child.index).toBe(0);
       expect(child.parentFingerprint).toBe(masterKey.fingerprint);
@@ -209,29 +219,29 @@ describe("HDKey", () => {
     });
 
     it("should sign and verify message", () => {
-      const signature = hdkey.sign(curve, hash);
+      const signature = hdkey.sign(hash);
       expect(signature).toBeInstanceOf(Uint8Array);
       expect(signature.length).toBe(64);
 
-      const isValid = hdkey.verify(curve, hash, signature);
+      const isValid = hdkey.verify(hash, signature);
       expect(isValid).toBe(true);
     });
 
     it("should fail verification with wrong signature", () => {
-      const signature = hdkey.sign(curve, hash);
+      const signature = hdkey.sign(hash);
       const wrongSignature = new Uint8Array(64);
       wrongSignature.fill(1);
 
-      const isValid = hdkey.verify(curve, hash, wrongSignature);
+      const isValid = hdkey.verify(hash, wrongSignature);
       expect(isValid).toBe(false);
     });
 
     it("should fail verification with wrong hash", () => {
-      const signature = hdkey.sign(curve, hash);
+      const signature = hdkey.sign(hash);
       const wrongHash = randomBytes(32);
 
-      const isValid = hdkey.verify(curve, hash, signature);
-      const isInvalid = hdkey.verify(curve, wrongHash, signature);
+      const isValid = hdkey.verify(hash, signature);
+      const isInvalid = hdkey.verify(wrongHash, signature);
 
       expect(isValid).toBe(true);
       expect(isInvalid).toBe(false);
@@ -239,18 +249,16 @@ describe("HDKey", () => {
 
     it("should throw error when signing without private key", () => {
       const publicOnlyKey = HDKey.fromExtendedKey(hdkey.publicExtendedKey);
-      expect(() => publicOnlyKey.sign(curve, hash)).toThrow(
-        "No privateKey set!"
-      );
+      expect(() => publicOnlyKey.sign(hash)).toThrow("No privateKey set!");
     });
 
     it("should throw error when verifying without public key", () => {
-      const signature = hdkey.sign(curve, hash);
+      const signature = hdkey.sign(hash);
       // 创建一个只有公钥的HDKey，然后清除公钥数据来模拟没有公钥的情况
       const publicOnlyKey = HDKey.fromExtendedKey(hdkey.publicExtendedKey);
       // 通过反射访问私有属性来模拟没有公钥的情况
       (publicOnlyKey as any).pubKey = undefined;
-      expect(() => publicOnlyKey.verify(curve, hash, signature)).toThrow(
+      expect(() => publicOnlyKey.verify(hash, signature)).toThrow(
         "No publicKey set!"
       );
     });

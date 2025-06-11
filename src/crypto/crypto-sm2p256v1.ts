@@ -12,6 +12,7 @@ import {
 import sm3 from "@/crypto/sm3";
 import {log} from "@/logger";
 import {Base58Impl, type Base58Interface} from "@/utils/base58";
+import { stripHexPrefix } from "@/utils/index";
 import { isHexString } from "@ethersproject/bytes";
 import type {CryptoService} from "./crypto";
 import type { EncodeFunc } from "./crypto";
@@ -49,16 +50,18 @@ export class GM implements CryptoService {
   publicKeyToAddress(publicKey: Buffer | string): string {
     let publicKeyBuffer: Buffer;
     if (typeof publicKey === "string") {
-      publicKeyBuffer = Buffer.from(publicKey, "hex");
+      publicKeyBuffer = Buffer.from(stripHexPrefix(publicKey), "hex");
     } else {
       publicKeyBuffer = publicKey;
     }
 
-    if (publicKeyBuffer.length > 64) {
-      publicKeyBuffer = publicKeyBuffer.subarray(publicKeyBuffer.length - 64);
+    if (publicKeyBuffer.length < 64) {
+      throw new Error(
+        `Invalid public key length, expected size greater than or equal to 64, but actual size is ${publicKeyBuffer.length}`
+      );
     }
 
-    const bs = this.hash(publicKeyBuffer);
+    const bs = this.hash(publicKeyBuffer.subarray(publicKeyBuffer.length - 64));
     const base58: Base58Interface = new Base58Impl();
     const address = base58.checkEncode(
       bs.subarray(bs.length - ADDRESS_BYTES_LENGTH),
@@ -67,7 +70,7 @@ export class GM implements CryptoService {
     return `${ADDRESS_TITLE}_${address}`;
   }
 
-  getPublicKeyFromPrivateKey(privateKey: string): string {
+  getPublicKeyFromPrivateKey(privateKey: string, compressed = false): string {
     if (!isHexString(privateKey)) {
       throw new Error(
         `Invalid private key, excepted hex string, but actual is ${privateKey}`
@@ -77,7 +80,8 @@ export class GM implements CryptoService {
     return getPublicKeyFromPrivateKey(
       privateKey.startsWith(HEX_PREFIX)
         ? privateKey.slice(HEX_PREFIX.length)
-        : privateKey
+        : privateKey,
+      compressed
     );
   }
 
