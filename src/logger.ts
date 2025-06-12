@@ -2,7 +2,7 @@ import pino, { Logger, LoggerOptions } from 'pino';
 
 // Default options
 const defaultOptions: LoggerOptions = {
-  level: "debug",
+  level: process.env.LOG_LEVEL || "info", // trace, debug, info, warn, error, fatal
   timestamp: pino.stdTimeFunctions.isoTime,
   formatters: {
     level: (label) => ({ level: label })

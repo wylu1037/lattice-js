@@ -133,6 +133,15 @@ interface HttpClient {
    * @returns The latest dblock
    */
   getLatestDBlock(chainId: number): Promise<DBlock>;
+
+  /**
+   * Pre-call contract
+   *
+   * @param chainId - The chain id
+   * @param transaction - The unsigned transaction
+   * @returns The receipt
+   */
+  preCallContract(chainId: number, transaction: Transaction): Promise<Receipt>;
 }
 
 // http client implementation
@@ -251,6 +260,24 @@ class HttpClientImpl implements HttpClient {
       }
     );
     return this.handleJsonRpcResponse<DBlock>(response);
+  }
+
+  async preCallContract(
+    chainId: number,
+    transaction: Transaction
+  ): Promise<Receipt> {
+    const response: JsonRpcResponse<Receipt> = await this.httpProvider.post(
+      {
+        id: JSON_RPC_ID,
+        jsonrpc: JSON_RPC_VERSION,
+        method: "wallet_preExecuteContract",
+        params: [transaction]
+      },
+      {
+        ChainId: chainId.toString()
+      }
+    );
+    return this.handleJsonRpcResponse<Receipt>(response);
   }
 }
 

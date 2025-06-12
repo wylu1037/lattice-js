@@ -23,6 +23,7 @@ import {
   RetryHandler,
   type RetryStrategy
 } from "@/utils/index";
+import { decryptFileKey } from "@/wallet";
 import { ResultAsync, errAsync, ok } from "neverthrow";
 import { TransactionBuilder } from "./tx";
 
@@ -49,7 +50,12 @@ class Credentials {
     fileKey: string,
     passphrase: string
   ) {
-    return new Credentials(accountAddress, fileKey, passphrase);
+    const result = decryptFileKey(fileKey, passphrase);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    const privateKey = result.value;
+    return new Credentials(accountAddress, fileKey, passphrase, privateKey);
   }
 
   static fromPrivateKey(accountAddress: string, privateKey: string) {
@@ -483,6 +489,34 @@ class LatticeClient {
     ).andThen((hash) => {
       return this.waitReceipt(chainId, hash, retryStrategy, retries);
     });
+  }
+
+  preCallContract(
+    credentials: Credentials,
+    chainId: number,
+    contractAddress: string,
+    code: string,
+    payload = HEX_PREFIX,
+    amount = 0,
+    joule = 0
+  ): ResultAsync<Receipt, Error> {
+    const unsignedTx = TransactionBuilder.builder(TransactionTypes.CallContract)
+      .setBlock(LatestBlock.emptyBlock())
+      .setOwner(credentials.getAccountAddress())
+      .setLinker(contractAddress)
+      .setCode(code)
+      .setPayload(payload)
+      .setAmount(amount)
+      .setJoule(joule)
+      .build();
+
+    return ResultAsync.fromPromise(
+      this.httpClient.preCallContract(chainId, unsignedTx),
+      (error) => {
+        log.error(`Failed to pre-call contract: ${error}`);
+        return error instanceof Error ? error : new Error(String(error));
+      }
+    );
   }
 }
 

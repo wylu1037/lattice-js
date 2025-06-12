@@ -188,7 +188,7 @@ describe.skip("lattice client", () => {
       .callContractWaitReceipt(
         credentials,
         chainId,
-        "zltc_csLtohCAMKpEkXUA6QBhsi2dw7FSHKQtA",
+        "zltc_QdXipFgzkHiDBbs2ksBYnyr8m1wUoDLNF",
         code
       )
       .match(
@@ -197,6 +197,31 @@ describe.skip("lattice client", () => {
         },
         (error) => {
           console.error("call contract failed", error);
+        }
+      );
+  });
+
+  it("should be able to pre-call contract", async () => {
+    const abi = [
+      "function incrementCounter()",
+      "function decrementCounter()",
+      "function getCount() returns (int256)"
+    ];
+    const latticeAbi = new LatticeAbi(abi);
+    const code = latticeAbi.encodeFunctionData("getCount");
+    await lattice
+      .preCallContract(
+        credentials,
+        chainId,
+        "zltc_QdXipFgzkHiDBbs2ksBYnyr8m1wUoDLNF",
+        code
+      )
+      .match(
+        (receipt) => {
+          console.log("pre-call contract success, receipt:", receipt);
+        },
+        (error) => {
+          console.error("pre-call contract failed", error);
         }
       );
   });
