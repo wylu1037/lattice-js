@@ -29,13 +29,13 @@ interface Traceability {
    * @returns The address of the business
    */
   updateProtocol(protocolUri: number, bytes: Buffer): Promise<string>;
-
   /**
    * Write a traceability
    * @param request The request
    * @returns The address of the business
    */
   writeTraceability(request: writeTraceabilityRequest): Promise<string>;
+  writeTraceabilityBatch(requests: writeTraceabilityRequest[]): Promise<string>;
   /**
    * Read a traceability
    * @param dataId The data id
@@ -98,6 +98,19 @@ class TraceabilityContract implements Traceability {
       request.dataId,
       request.data,
       request.businessContractAddress
+    ]);
+  }
+
+  async writeTraceabilityBatch(
+    requests: writeTraceabilityRequest[]
+  ): Promise<string> {
+    return await this.iface.encodeFunctionData("writeTraceabilityBatch", [
+      requests.map((request) => [
+        request.protocolUri,
+        request.dataId,
+        request.data,
+        request.businessContractAddress
+      ])
     ]);
   }
 

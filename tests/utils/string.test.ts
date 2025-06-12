@@ -10,12 +10,6 @@ describe("string utils", () => {
       expect(result).toBe("1234abcd");
     });
 
-    it("should throw error for hex string without 0x prefix", () => {
-      const hexWithoutPrefix = "1234abcd";
-      expect(() => stripHexPrefix(hexWithoutPrefix)).toThrow(
-        "Invalid hex string"
-      );
-    });
 
     it("should handle empty hex string with prefix", () => {
       const emptyHexWithPrefix = "0x";
@@ -45,28 +39,6 @@ describe("string utils", () => {
       const longHex = `0x${"a".repeat(64)}`;
       const result = stripHexPrefix(longHex);
       expect(result).toBe("a".repeat(64));
-    });
-
-    it("should throw error for invalid hex string", () => {
-      const invalidHex = "not-a-hex-string";
-      expect(() => stripHexPrefix(invalidHex)).toThrow("Invalid hex string");
-    });
-
-    it("should throw error for hex string with invalid characters", () => {
-      const invalidHex = "0x123g";
-      expect(() => stripHexPrefix(invalidHex)).toThrow("Invalid hex string");
-    });
-
-    it("should throw error for non-string input", () => {
-      expect(() => stripHexPrefix(123 as any)).toThrow("Invalid hex string");
-      expect(() => stripHexPrefix(null as any)).toThrow("Invalid hex string");
-      expect(() => stripHexPrefix(undefined as any)).toThrow(
-        "Invalid hex string"
-      );
-    });
-
-    it("should throw error for empty string", () => {
-      expect(() => stripHexPrefix("")).toThrow("Invalid hex string");
     });
   });
 

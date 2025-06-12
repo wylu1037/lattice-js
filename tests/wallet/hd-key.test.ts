@@ -139,6 +139,13 @@ describe("HDKey", () => {
 
     it("should derive deep path m/44'/0'/0'/0/0", () => {
       const child = masterKey.derive("m/44'/0'/0'/0/0");
+      console.log(bytesToHex(child.privateKey!));
+      console.log(bytesToHex(child.publicKey!));
+      console.log(
+        createCrypto(Curves.Sm2p256v1).publicKeyToAddress(
+          bytesToHex(sm2p.getPublicKey(child.privateKey!, false))
+        )
+      );
       expect(child.depth).toBe(5);
       expect(child.index).toBe(0);
     });
