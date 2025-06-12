@@ -19,6 +19,22 @@ class PeekabooContract implements Peekaboo {
     const method = isVisible ? "delPayload" : "addPayload"; // delPayload 删除隐藏记录, addPayload 添加隐藏记录
     return await this.iface.encodeFunctionData(method, [hash]);
   }
+
+  async toggleCodeVisibility(
+    hash: string,
+    isVisible: boolean
+  ): Promise<string> {
+    const method = isVisible ? "delCode" : "addCode"; // delCode 删除隐藏记录, addCode 添加隐藏记录
+    return await this.iface.encodeFunctionData(method, [hash]);
+  }
+
+  async toggleHashVisibility(
+    hash: string,
+    isVisible: boolean
+  ): Promise<string> {
+    const method = isVisible ? "delHash" : "addHash"; // delHash 删除隐藏记录, addHash 添加隐藏记录
+    return await this.iface.encodeFunctionData(method, [hash]);
+  }
 }
 
 /**
