@@ -1,4 +1,5 @@
-import { BuiltinContract, LatticeAbi } from "@/index";
+import { LatticeAbi } from "@/utils/abi";
+import { BuiltinContract } from "./types";
 
 interface Proposal {
   approve(proposalId: string): Promise<string>;
