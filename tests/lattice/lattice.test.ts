@@ -1,12 +1,16 @@
 import { Curves } from "@/common/constants";
+import { Address } from "@/common/types";
 import {
   ChainConfig,
   Credentials,
   LatticeClient,
   NodeConnectionConfig,
-  TraceabilityContract
+  TraceabilityContract,
+  serializeMessage
 } from "@/lattice/index";
 import { LatticeAbi } from "@/utils/abi";
+import { encodeBytes32Array } from "@/utils/index";
+import { randomBytes } from "@noble/hashes/utils";
 
 describe.skip("lattice client", () => {
   const chainId = 1;
@@ -225,4 +229,192 @@ describe.skip("lattice client", () => {
         }
       );
   });
+
+  describe("should be able to traceability", () => {
+    const traceability = new TraceabilityContract();
+
+    it("should be able to create business", async () => {
+      const code = traceability.createBusiness();
+      await lattice
+        .callContractWaitReceipt(
+          credentials,
+          chainId,
+          TraceabilityContract.ADDRESS_FOR_CREATE_BUSINESS,
+          code
+        )
+        .match(
+          (receipt) => {
+            console.log("create business success, receipt:", receipt);
+            const contractRet = receipt.contractRet;
+            const address = new Address(contractRet!);
+            console.log("business address:", address.toZLTC());
+          },
+          (error) => {
+            console.error("create business failed", error);
+          }
+        );
+      // zltc_T98mR1ZN488kiHiLGfMqQW8XuTMN3CKde
+    });
+
+    it("should be able to create product", async () => {
+      const proto = `syntax = "proto3";
+
+        message Message {
+          string id = 1;
+          string name = 2;
+          int32 age = 3;
+        }
+      `;
+      const code = await traceability.createProtocol(
+        10,
+        Buffer.from(proto, "utf-8")
+      );
+      await lattice
+        .callContractWaitReceipt(
+          credentials,
+          chainId,
+          traceability.getBuiltinContract().getAddress(),
+          code
+        )
+        .match(
+          (receipt) => {
+            console.log("create protocol success, receipt:", receipt);
+            const contractRet = receipt.contractRet;
+            const iface = traceability.getIface().getInterface();
+            const result = iface.decodeFunctionResult(
+              "addProtocol",
+              contractRet!
+            );
+            console.log("create protocol success, result:", result.toString());
+          },
+          (error) => {
+            console.error("create protocol failed", error);
+          }
+        );
+      // 42949672962
+    });
+
+    it("should be able to write traceability", async () => {
+      const proto = `syntax = "proto3";
+
+        message Message {
+          string id = 1;
+          string name = 2;
+          int32 age = 3;
+        }
+      `;
+      const bytes = await serializeMessage(
+        proto,
+        `{
+            "id": "1234567890",
+            "name": "John Doe",
+            "age": 30
+          }`
+      );
+      const dataId = Buffer.from(randomBytes(64)).toString("hex");
+      console.log("dataId:", dataId);
+      const code = await traceability.writeTraceability({
+        protocolUri: 42949672962,
+        dataId: dataId,
+        data: encodeBytes32Array(Buffer.from(bytes)),
+        businessContractAddress: "zltc_T98mR1ZN488kiHiLGfMqQW8XuTMN3CKde"
+      });
+
+      await lattice
+        .callContractWaitReceipt(
+          credentials,
+          chainId,
+          traceability.getBuiltinContract().getAddress(),
+          code
+        )
+        .match(
+          (receipt) => {
+            console.log("write traceability success, receipt:", receipt);
+          },
+          (error) => {
+            console.error("write traceability failed", error);
+          }
+        );
+    });
+
+    it("should be able to read traceability", async () => {
+      const code = await traceability.readTraceability(
+        "1234567890",
+        "zltc_T98mR1ZN488kiHiLGfMqQW8XuTMN3CKde"
+      );
+      await lattice
+        .callContractWaitReceipt(
+          credentials,
+          chainId,
+          traceability.getBuiltinContract().getAddress(),
+          code
+        )
+        .match(
+          (receipt) => {
+            console.log("read traceability success, receipt:", receipt);
+          },
+          (error) => {
+            console.error("read traceability failed", error);
+          }
+        );
+    });
+
+    it(
+      "should be able to write traceability batch",
+      { timeout: 60000_000 },
+      async () => {
+        for (let i = 0; i < 50000; i++) {
+          await writeTraceability(traceability, lattice, credentials, chainId);
+        }
+      }
+    );
+  });
 });
+
+async function writeTraceability(
+  traceability: TraceabilityContract,
+  lattice: LatticeClient,
+  credentials: Credentials,
+  chainId: number
+) {
+  const proto = `syntax = "proto3";
+
+        message Message {
+          string id = 1;
+          string name = 2;
+          int32 age = 3;
+        }
+      `;
+  const bytes = await serializeMessage(
+    proto,
+    `{
+            "id": "1234567890",
+            "name": "John Doe",
+            "age": 30
+          }`
+  );
+  const dataId = Buffer.from(randomBytes(32)).toString("hex");
+  console.log("dataId:", dataId);
+  const code = await traceability.writeTraceability({
+    protocolUri: 42949672962,
+    dataId: dataId,
+    data: encodeBytes32Array(Buffer.from(bytes)),
+    businessContractAddress: "zltc_T98mR1ZN488kiHiLGfMqQW8XuTMN3CKde"
+  });
+
+  await lattice
+    .callContract(
+      credentials,
+      chainId,
+      traceability.getBuiltinContract().getAddress(),
+      code
+    )
+    .match(
+      (hash) => {
+        console.log("write traceability success, hash:", hash);
+      },
+      (error) => {
+        console.error("write traceability failed", error);
+      }
+    );
+}

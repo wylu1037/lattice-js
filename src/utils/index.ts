@@ -10,3 +10,4 @@ export * from "./properties";
 export * from "./retry_handler";
 export * from "./retry_async";
 export * from "./string";
+export * from "./date";

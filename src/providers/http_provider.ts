@@ -1,5 +1,16 @@
-import { DBlock, LatestBlock, Receipt, Transaction } from "@/common/types/index"
+import { ProposalState, ProposalType, ProposalTypes } from "@/common/constants";
+import {
+  ContractLifecycleProposal,
+  DBlock,
+  LatestBlock,
+  ModifyChainConfigurationProposal,
+  Proposal,
+  Receipt,
+  SubchainProposal,
+  Transaction
+} from "@/common/types/index";
 import { log } from "@/logger";
+import { formatDateToYYYYMMDD } from "@/utils/index";
 import axios, { AxiosRequestHeaders, AxiosResponse } from "axios";
 
 // json-rpc id
@@ -61,7 +72,11 @@ class HttpProvider {
     jsonRpcBody: JsonRpcBody,
     headers?: AxiosRequestHeaders | Record<string, string | string[]>
   ): Promise<AxiosResponse> {
-    log.debug("发起HTTP请求，请求地址：%s，请求体：%o", this.baseUrl, jsonRpcBody);
+    log.debug(
+      "发起HTTP请求，请求地址：%s，请求体：%o",
+      this.baseUrl,
+      jsonRpcBody
+    );
     try {
       const response = await axios.post(this.baseUrl, jsonRpcBody, {
         headers: headers || {}
@@ -142,6 +157,56 @@ interface HttpClient {
    * @returns The receipt
    */
   preCallContract(chainId: number, transaction: Transaction): Promise<Receipt>;
+
+  /**
+   * Get the contract lifecycle proposals
+   *
+   * @param chainId - The chain id
+   * @param contractAddress - The contract address
+   * @param state - The proposal state
+   * @param startDate - The start date
+   * @param endDate - The end date
+   * @returns The contract lifecycle proposals
+   */
+  getContractLifecycleProposals(
+    chainId: number,
+    contractAddress: string,
+    state: ProposalState,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Proposal<ContractLifecycleProposal>[]>;
+
+  /**
+   * Get the modify chain configuration proposals
+   *
+   * @param chainId - The chain id
+   * @param state - The proposal state
+   * @param startDate - The start date
+   * @param endDate - The end date
+   * @returns The modify chain configuration proposals
+   */
+  getModifyChainConfigurationProposals(
+    chainId: number,
+    state: ProposalState,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Proposal<ModifyChainConfigurationProposal>[]>;
+
+  /**
+   * Get the subchain proposals
+   *
+   * @param chainId - The chain id
+   * @param state - The proposal state
+   * @param startDate - The start date
+   * @param endDate - The end date
+   * @returns The subchain proposals
+   */
+  getSubchainProposals(
+    chainId: number,
+    state: ProposalState,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Proposal<SubchainProposal>[]>;
 }
 
 // http client implementation
@@ -278,6 +343,97 @@ class HttpClientImpl implements HttpClient {
       }
     );
     return this.handleJsonRpcResponse<Receipt>(response);
+  }
+
+  async getContractLifecycleProposals(
+    chainId: number,
+    contractAddress: string,
+    state: ProposalState,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Proposal<ContractLifecycleProposal>[]> {
+    const response: JsonRpcResponse<Proposal<ContractLifecycleProposal>[]> =
+      await this.httpProvider.post(
+        {
+          id: JSON_RPC_ID,
+          jsonrpc: JSON_RPC_VERSION,
+          method: "wallet_getProposal",
+          params: [
+            {
+              proposalAddress: contractAddress,
+              proposalState: state,
+              proposalType: ProposalTypes.ContractLifecycle,
+              dateStart: formatDateToYYYYMMDD(startDate),
+              dateEnd: formatDateToYYYYMMDD(endDate)
+            }
+          ]
+        },
+        {
+          ChainId: chainId.toString()
+        }
+      );
+    return this.handleJsonRpcResponse<Proposal<ContractLifecycleProposal>[]>(
+      response
+    );
+  }
+
+  async getModifyChainConfigurationProposals(
+    chainId: number,
+    state: ProposalState,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Proposal<ModifyChainConfigurationProposal>[]> {
+    const response: JsonRpcResponse<
+      Proposal<ModifyChainConfigurationProposal>[]
+    > = await this.httpProvider.post(
+      {
+        id: JSON_RPC_ID,
+        jsonrpc: JSON_RPC_VERSION,
+        method: "wallet_getProposal",
+        params: [
+          {
+            proposalState: state,
+            proposalType: ProposalTypes.ModifyChainConfiguration,
+            dateStart: formatDateToYYYYMMDD(startDate),
+            dateEnd: formatDateToYYYYMMDD(endDate)
+          }
+        ]
+      },
+      {
+        ChainId: chainId.toString()
+      }
+    );
+    return this.handleJsonRpcResponse<
+      Proposal<ModifyChainConfigurationProposal>[]
+    >(response);
+  }
+
+  async getSubchainProposals(
+    chainId: number,
+    state: ProposalState,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Proposal<SubchainProposal>[]> {
+    const response: JsonRpcResponse<Proposal<SubchainProposal>[]> =
+      await this.httpProvider.post(
+        {
+          id: JSON_RPC_ID,
+          jsonrpc: JSON_RPC_VERSION,
+          method: "wallet_getProposal",
+          params: [
+            {
+              proposalState: state,
+              proposalType: ProposalTypes.ChainByChain,
+              dateStart: formatDateToYYYYMMDD(startDate),
+              dateEnd: formatDateToYYYYMMDD(endDate)
+            }
+          ]
+        },
+        {
+          ChainId: chainId.toString()
+        }
+      );
+    return this.handleJsonRpcResponse<Proposal<SubchainProposal>[]>(response);
   }
 }
 
