@@ -39,4 +39,12 @@ type writeTraceabilityRequest = {
   businessContractAddress: string;
 };
 
-export { BuiltinContract, type writeTraceabilityRequest };
+interface UploadKeyRequest {
+  publicKey: string; // bytes类型，公钥数据
+}
+
+export {
+  BuiltinContract,
+  type writeTraceabilityRequest,
+  type UploadKeyRequest
+};
