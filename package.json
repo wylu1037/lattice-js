@@ -5,10 +5,7 @@
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "type": "module",
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "exports": {
     ".": {
       "import": "./dist/src/index.js",
@@ -26,10 +23,7 @@
     "registry-cn": "npm config set registry https://registry.npmmirror.com/",
     "publish": "npm publish --access public"
   },
-  "keywords": [
-    "blockchain",
-    "lattice"
-  ],
+  "keywords": ["blockchain", "lattice"],
   "author": "wylu",
   "license": "Apache-2.0",
   "dependencies": {
