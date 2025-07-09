@@ -13,11 +13,13 @@ LatticeJS is a comprehensive SDK implemented in TypeScript for blockchain intera
 
 ## Features
 
+- **Dual Module Support**: Full support for both CommonJS and ES Modules (CJS + ESM)
 - **Cryptographic Suite**: Full implementation of SM2, SM3, and SM4 cryptographic algorithms
 - **Ethereum Compatibility**: Built with ethers.js components for seamless Ethereum integration
 - **Wallet Management**: Secure key generation and management
 - **Provider System**: Flexible connection to various blockchain nodes
 - **Robust Logging**: Built-in logging system with rotation capabilities
+- **TypeScript First**: Complete type definitions for enhanced development experience
 
 ## Installation
 
@@ -27,6 +29,30 @@ npm install @zlattice/lattice-js
 # or with pnpm
 pnpm add @zlattice/lattice-js
 ```
+
+## Module Support
+
+This library supports both module systems:
+
+- **ES Modules (ESM)**: Modern `import` syntax with tree-shaking support
+- **CommonJS (CJS)**: Traditional `require()` syntax for Node.js compatibility
+
+Node.js will automatically choose the appropriate format based on your project configuration.
+
+### Quick Start
+
+```typescript
+// ESM
+import { LatticeClient, Address, Curves } from '@zlattice/lattice-js';
+
+// CJS
+const { LatticeClient, Address, Curves } = require('@zlattice/lattice-js');
+
+const client = new LatticeClient({ rpcUrl: 'http://localhost:8000' });
+const address = new Address('zltc_QLbz7JHiBTspS962RLKV8GndWFwjA5K66');
+```
+
+For detailed usage examples, see [examples/README.md](examples/README.md).
 
 ## Core Dependencies
 

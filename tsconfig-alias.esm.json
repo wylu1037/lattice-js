@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "./dist/esm",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "verbose": false,
+    "replacers": {
+      "resolve-relative-imports": {
+        "find": "(\\.\\/.+?)(?=(['\"]|\\s|$))",
+        "replace": "$1.js"
+      },
+      "resolve-alias-imports": {
+        "find": "(@\\/[^'\"\\s]+?)(?=(['\"]|\\s|$))",
+        "replace": "$1.js"
+      }
+    }
+  }
+} 
