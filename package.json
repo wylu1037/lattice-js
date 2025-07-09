@@ -1,11 +1,13 @@
 {
   "name": "@zlattice/lattice-js",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Lattice blockchain TypeScript SDK with dual module support (CJS + ESM)",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/esm/index.d.ts",
@@ -27,7 +29,13 @@
     "registry-cn": "npm config set registry https://registry.npmmirror.com/",
     "publish": "npm publish --access public"
   },
-  "keywords": ["blockchain", "lattice", "typescript", "esm", "cjs"],
+  "keywords": [
+    "blockchain",
+    "lattice",
+    "typescript",
+    "esm",
+    "cjs"
+  ],
   "author": "wylu",
   "license": "Apache-2.0",
   "dependencies": {
