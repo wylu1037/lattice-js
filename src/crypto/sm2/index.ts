@@ -8,7 +8,7 @@ import { field, sm2Curve } from './ec';
 import { sm3 } from './sm3'
 import { arrayToHex, arrayToUtf8, generateKeyPairHex, hexToArray, leftPad, utf8ToHex } from './utils'
 
-export * from "./utils.js";
+export * from "./utils";
 export { initRNGPool } from './rng'
 export { calculateSharedKey } from './kx'
 

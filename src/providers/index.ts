@@ -1,1 +1,1 @@
-export * from "./http_provider.js";
+export * from "./http_provider";

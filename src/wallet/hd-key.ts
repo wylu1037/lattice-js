@@ -14,7 +14,7 @@ import {
   createView,
   hexToBytes,
   utf8ToBytes
-} from "@noble/hashes/utils.js";
+} from "@noble/hashes/utils";
 import { createBase58check } from "@scure/base";
 
 const Point = secp.ProjectivePoint;

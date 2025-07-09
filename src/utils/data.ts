@@ -5,7 +5,7 @@
  *  @_subsection api/utils:Data Helpers  [about-data]
  */
 import { BytesLike, hexlify } from "@ethersproject/bytes";
-import { assert, assertArgument } from "./errors.js";
+import { assert, assertArgument } from "./errors";
 
 function _getBytes(
   value: BytesLike,

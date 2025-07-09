@@ -1,2 +1,2 @@
-export * from "./file_key.js";
-export * from "./hd-key.js";
+export * from "./file_key";
+export * from "./hd-key";
