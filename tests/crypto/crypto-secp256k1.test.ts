@@ -1,6 +1,5 @@
 import { CryptoService } from "@/crypto/crypto";
 import { NIST } from "@/crypto/crypto-secp256k1";
-import { describe, expect, it } from "vitest";
 
 describe("crypto.secp256k1", () => {
   it("should generate keypair", () => {

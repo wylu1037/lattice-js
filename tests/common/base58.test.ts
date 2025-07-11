@@ -1,7 +1,7 @@
+import { ADDRESS_TITLE, ADDRESS_VERSION } from "@/common/constants";
+import { Address } from "@/common/types/address";
+import { Base58Impl, Base58Interface } from "@/utils/base58";
 import { describe, expect, it } from "vitest";
-import { ADDRESS_TITLE, ADDRESS_VERSION } from "../../src/common/constants";
-import { Address } from "../../src/common/types/address";
-import { Base58Impl, Base58Interface } from "../../src/utils/base58";
 
 describe("Base58", () => {
   describe("checksum", () => {
@@ -17,7 +17,7 @@ describe("Base58", () => {
       const base58: Base58Interface = new Base58Impl();
       const array = [
         146, 147, 198, 4, 198, 68, 191, 172, 52, 244, 152, 153, 140, 195, 64,
-        47, 32, 61, 77, 107,
+        47, 32, 61, 77, 107
       ];
       const actual = `${ADDRESS_TITLE}_${base58.checkEncode(
         Buffer.from(array),

@@ -1,5 +1,4 @@
-import { describe, expect, it } from "vitest";
-import { Address } from "../../src/common/types/address";
+import { Address } from "@/common/types/address";
 
 describe("Address", () => {
   describe("convert eth to zltc", () => {

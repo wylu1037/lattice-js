@@ -1,6 +1,5 @@
 import { HEX_PREFIX } from "@/common/constants";
 import { addHexPrefix, stripHexPrefix } from "@/utils/string";
-import { describe, expect, it } from "vitest";
 
 describe("string utils", () => {
   describe("stripHexPrefix", () => {

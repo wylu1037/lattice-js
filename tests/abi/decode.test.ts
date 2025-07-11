@@ -1,5 +1,4 @@
 import { Interface } from "@ethersproject/abi";
-import { describe, expect, it } from "vitest";
 
 describe("abi decode", () => {
   it("should decode", () => {

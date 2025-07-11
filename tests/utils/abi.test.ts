@@ -3,7 +3,6 @@ import { LatticeAbi } from "@/utils/abi";
 import { Fragment, Interface, ParamType } from "@ethersproject/abi";
 import { hexZeroPad, hexlify } from "@ethersproject/bytes";
 import { parseUnits } from "@ethersproject/units";
-import { describe, expect, it } from "vitest";
 
 describe("abi", () => {
   const erc20Abi = [
