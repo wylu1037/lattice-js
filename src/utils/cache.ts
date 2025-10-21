@@ -1,5 +1,5 @@
 import { log } from "@/logger";
-import KeyvRedis, { Keyv } from "@keyv/redis";
+import KeyvRedis from "@keyv/redis";
 import { Cacheable } from "cacheable";
 
 type CacheBackend = "memory" | "redis";
@@ -22,13 +22,10 @@ class CacheService {
         this.cache = new Cacheable({ ttl: defaultTtl });
         break;
       case "redis": {
-        const primary = new KeyvRedis(
-          config.redisUrl || "redis://localhost:6379/0",
-          {
-            namespace: namespace || "zlattice",
-            keyPrefixSeparator: ":"
-          }
-        );
+        const primary = new KeyvRedis(redisUrl || "redis://localhost:6379/0", {
+          namespace: namespace || "zlattice",
+          keyPrefixSeparator: ":"
+        });
         primary.on("error", (err) => {
           log.error(`Redis connection error: ${err}`);
         });

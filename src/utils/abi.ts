@@ -19,17 +19,17 @@ class LatticeAbi {
 
   getFunction(name: string) {
     const func = this.iface.getFunction(name);
-    if (!func) {
-      throw new Error(`Function ${name} not found in ABI`);
-    }
+  if (!func) {
+    throw new Error(`ABI error: function '${name}' not found in contract ABI`);
+  }
     return func;
   }
 
   getEvent(name: string) {
     const event = this.iface.getEvent(name);
-    if (!event) {
-      throw new Error(`Event ${name} not found in ABI`);
-    }
+  if (!event) {
+    throw new Error(`ABI error: event '${name}' not found in contract ABI`);
+  }
     return event;
   }
 
@@ -59,7 +59,7 @@ class LatticeAbi {
 function convertArguments(args: ParamType[], params: any[]): any[] {
   if (args.length !== params.length) {
     throw new Error(
-      `Invalid number of arguments, expected ${args.length} but got ${params.length}`
+      `ABI decode error: parameter count mismatch. Expected ${args.length} parameters but got ${params.length}`
     );
   }
   return args.map((arg, index) => convertArgument(arg, params[index]));
@@ -70,12 +70,16 @@ function convertArgument(pt: ParamType, param: any): any {
   switch (pt.baseType) {
     case "string":
       if (tp !== "string") {
-        throw new Error("Invalid string, expected string");
+        throw new Error(
+          `ABI decode error: expected string type, got ${tp}. Parameter value: ${param}`
+        );
       }
       return param;
     case "address":
       if (tp !== "string") {
-        throw new Error("Invalid address, expected string");
+        throw new Error(
+          `ABI decode error: expected string for address, got ${tp}. Parameter value: ${param}`
+        );
       }
       return new Address(param).toETH();
     case "bool": {
@@ -167,7 +171,9 @@ function convertArgument(pt: ParamType, param: any): any {
       if (tp === "string" || tp === "number") {
         return BigInt(param);
       }
-      throw new Error("Invalid int, expected string or number");
+      throw new Error(
+        `ABI decode error: invalid integer type '${pt.baseType}', expected string or number. Parameter value: ${param}`
+      );
     // bytes1 - bytes32
     case "bytes1":
     case "bytes2":
@@ -202,7 +208,9 @@ function convertArgument(pt: ParamType, param: any): any {
     case "bytes31":
     case "bytes32":
       if (!isHexString(param)) {
-        throw new Error("Invalid bytes, expected hex string");
+        throw new Error(
+          `ABI decode error: invalid ${pt.baseType} format, expected hex string. Parameter value: ${param}`
+        );
       }
       return param;
     default:

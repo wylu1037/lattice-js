@@ -1,4 +1,4 @@
-import { AccountLockImpl, newAccountLock } from "@/lattice/account_lock";
+import { AccountLockImpl, newAccountLock } from "@/lattice/account-lock";
 
 const timeout = (ms: number) => new Promise((r) => setTimeout(r, ms));
 

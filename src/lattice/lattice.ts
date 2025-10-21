@@ -165,7 +165,7 @@ class LatticeClient {
    * @param hash The hash
    * @param retryStrategy The retry strategy, default is FixedDelayStrategy.default
    * @param retries The number of retries, default is 10
-   * @returns E.Either<Receipt, Error>, left is the receipt, right is the error
+   * @returns ResultAsync<Receipt, Error>, left is the receipt, right is the error
    */
   waitReceipt(
     chainId: number,

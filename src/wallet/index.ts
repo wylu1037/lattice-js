@@ -1,2 +1,2 @@
-export * from "./file_key";
+export * from "./file-key";
 export * from "./hd-key";
