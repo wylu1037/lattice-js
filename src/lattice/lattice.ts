@@ -24,7 +24,7 @@ import {
   type RetryStrategy
 } from "@/utils/index";
 import { decryptFileKey } from "@/wallet";
-import { ResultAsync, errAsync, ok } from "neverthrow";
+import { Result, ResultAsync, err, errAsync, ok } from "neverthrow";
 import { TransactionBuilder } from "./tx";
 
 class Credentials {
@@ -49,16 +49,19 @@ class Credentials {
     accountAddress: string,
     fileKey: string,
     passphrase: string
-  ) {
+  ): Result<Credentials, Error> {
     const result = decryptFileKey(fileKey, passphrase);
     if (result.isErr()) {
-      throw result.error;
+      return err(result.error);
     }
     const privateKey = result.value;
-    return new Credentials(accountAddress, fileKey, passphrase, privateKey);
+    return ok(new Credentials(accountAddress, fileKey, passphrase, privateKey));
   }
 
-  static fromPrivateKey(accountAddress: string, privateKey: string) {
+  static fromPrivateKey(
+    accountAddress: string,
+    privateKey: string
+  ): Credentials {
     return new Credentials(accountAddress, undefined, undefined, privateKey);
   }
 

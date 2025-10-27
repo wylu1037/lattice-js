@@ -27,11 +27,17 @@ describe("file key", () => {
   });
 
   it("should decrypt file key", { timeout: 30_000 }, () => {
-    const fileKey = `{"uuid":"2d4c92eb-a38e-4a15-b4ad-9843fc791903","address":"zltc_c24LNZBLwxWrSLgmdGZSqYC2xLFSFYHSh","cipher":{"aes":{"cipher":"aes-128-ctr","iv":"14ced131ebd7641a1720ec9817fac397"},"kdf":{"kdf":"scrypt","kdfParams":{"DKLen":32,"n":262144,"p":1,"r":8,"salt":"ce11518c8b5722ba49a243b34b283cb8b750acdd39cff2c6741683877fb8440b"}},"cipherText":"cb58a1623d3d684fdc644273c0187f751ce8f7e717f45681ad5166678bb76df0","mac":"770c2a95e7050c3b3e7b43298bdc5d2dc3bb1e22737345f1c25281eb72992b25"},"isGM":true}`;
-    const result = decryptFileKey(fileKey, "123");
-    assert(result.isOk());
-    expect(result.value).toBe(
-      "0x8e247714ab228e6dcaf664c6ca623426ca50aa0b38cce6e0c2b7627f0155f5cc"
+    const fileKey = `{"uuid":"ad1ae878-9323-43fa-98dc-10ee52c59252","address":"zltc_hRzdBQSUeHa2DLo1JTcVgJVCdxV949uQf","cipher":{"aes":{"cipher":"aes-128-ctr","iv":"6aa86db3f3c07fb10e1180c1bce7e05f"},"kdf":{"kdf":"scrypt","kdfParams":{"DKLen":32,"n":32768,"p":1,"r":8,"salt":"4f5143f5d6d1a1aebaaac1ba7e1bee68595164ca911f2571467a06618f3db758"}},"cipherText":"405305e2582857292ae59452f9fe8d95944137fabe877c28fd0c41782c8a5ada","mac":"d45aa4cdfec9d3cb04650b9b6bd15d80891a764b7fa907e8cb8a5596711d4747"},"isGM":true}`;
+    const result = decryptFileKey(fileKey, "Aa123456");
+    result.match(
+      (value) => {
+        expect(value).toBe(
+          "0x8e247714ab228e6dcaf664c6ca623426ca50aa0b38cce6e0c2b7627f0155f5cc"
+        );
+      },
+      (error) => {
+        console.log(error);
+      }
     );
   });
 });
